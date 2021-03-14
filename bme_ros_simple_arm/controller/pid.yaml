@@ -1,0 +1,38 @@
+gazebo_ros_control:   
+  pid_gains:
+    shoulder_pan_joint:
+      p: 1000.0
+      i: 0.1 
+      d: 1.0
+      i_clamp_max: 500.0
+      i_clamp_min: -500.0
+    shoulder_lift_joint:
+      p: 600.0
+      i: 0.1 
+      d: 1.0
+      i_clamp_max: 500.0
+      i_clamp_min: -500.0
+    elbow_joint:
+      p: 800.0
+      i: 0.1
+      d: 1.0
+      i_clamp_max: 500.0
+      i_clamp_min: -500.0
+    wrist_joint:
+      p: 1000.0
+      i: 0.1 
+      d: 1.0
+      i_clamp_max: 500.0
+      i_clamp_min: -500.0
+    left_finger_joint:
+      p: 300.0
+      i: 0.1
+      d: 1.0
+      i_clamp_max: 100.0
+      i_clamp_min: -100.0
+    right_finger_joint:
+      p: 300.0
+      i: 0.1 
+      d: 1.0
+      i_clamp_max: 100.0
+      i_clamp_min: -100.0
