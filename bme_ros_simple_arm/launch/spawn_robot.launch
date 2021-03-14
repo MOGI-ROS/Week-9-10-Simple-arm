@@ -24,14 +24,14 @@
   <!-- Send robot states to tf -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen"/>
 
-  <!-- joint_state_controller -->
+  <!-- Joint_state_controller -->
   <rosparam file="$(find bme_ros_simple_arm)/controller/joint_state_controller.yaml" command="load"/>
   <node name="joint_state_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_controller" respawn="false" output="screen"/>
 
-  <!-- start this controller -->
+  <!-- Start this controller -->
   <rosparam file="$(find bme_ros_simple_arm)/controller/arm_controller.yaml" command="load"/>
-  <rosparam file="$(find bme_ros_simple_arm)/controller/gripper_controller.yaml" command="load"/>
-  <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller left_finger_controller right_finger_controller" respawn="false" output="screen"/>
+  <rosparam file="$(find bme_ros_simple_arm)/controller/pid.yaml"/>
+  <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller" respawn="false" output="screen"/>
 
   <!-- Spawn mogi_bot -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
