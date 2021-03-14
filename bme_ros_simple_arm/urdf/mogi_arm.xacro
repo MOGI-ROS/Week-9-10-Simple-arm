@@ -240,7 +240,7 @@
 
   <!-- Left finger joint -->
   <joint name="left_finger_joint" type="prismatic">
-    <limit lower="0" upper="0.03" effort="1000.0" velocity="4.0"/>
+    <limit lower="0" upper="0.04" effort="100.0" velocity="4.0"/>
     <parent link="gripper_base"/>
     <child link="left_finger"/>
     <axis xyz="0 1 0"/>
@@ -273,16 +273,19 @@
   </link>
 
   <gazebo reference="left_finger">
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <minDepth>0.003</minDepth>  
-    <maxVel>0</maxVel>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <mu1>15</mu1>
+    <mu2>15</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.002</minDepth>
     <material>Gazebo/Blue</material>
   </gazebo>
 
   <!-- Right finger joint -->
   <joint name="right_finger_joint" type="prismatic">
-    <limit lower="0" upper="0.03" effort="1000.0" velocity="4.0"/>
+    <limit lower="0" upper="0.04" effort="100.0" velocity="4.0"/>
     <parent link="gripper_base"/>
     <child link="right_finger"/>
     <axis xyz="0 -1 0"/>
@@ -315,10 +318,13 @@
   </link>
 
   <gazebo reference="right_finger">
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <minDepth>0.003</minDepth>  
-    <maxVel>0</maxVel>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <mu1>15</mu1>
+    <mu2>15</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.002</minDepth>
     <material>Gazebo/Blue</material>
   </gazebo>
 
