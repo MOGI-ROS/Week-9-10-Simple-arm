@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- RViz config file -->
+  <arg name="rvizconfig" default="$(find bme_ros_simple_arm)/rviz/mogi_arm.rviz" />
+  <arg name="model" default="$(find bme_ros_simple_arm)/urdf/mogi_arm.xacro"/>
+
+  <!-- Robot pose -->
+  <!-- Inititalize it's position in the desired location inside the world -->
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="1.05"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="0"/>
+
+  <!-- Launch our Gazebo world -->
+  <include file="$(find bme_ros_simple_arm)/launch/world.launch"/>
+
+  <!-- Find mogi_bot description and send urdf to param server -->
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <!-- Send robot states to tf -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen"/>
+
+  <!-- joint_state_controller -->
+  <rosparam file="$(find bme_ros_simple_arm)/controller/joint_state_controller.yaml" command="load"/>
+  <node name="joint_state_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_controller" respawn="false" output="screen"/>
+
+  <!-- start this controller -->
+  <rosparam file="$(find bme_ros_simple_arm)/controller/arm_controller.yaml" command="load"/>
+  <rosparam file="$(find bme_ros_simple_arm)/controller/gripper_controller.yaml" command="load"/>
+  <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller left_finger_controller right_finger_controller" respawn="false" output="screen"/>
+
+  <!-- Spawn mogi_bot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
+    args="-urdf -param robot_description -model mogi_bot 
+            -x $(arg x) -y $(arg y) -z $(arg z)
+            -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
+
+  <!-- Launch RViz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+</launch>
