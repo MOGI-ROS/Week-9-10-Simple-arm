@@ -19,8 +19,8 @@
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.1</near>
-          <far>25.0</far>
+          <near>0.005</near>
+          <far>5.0</far>
         </clip>
         <noise>
           <type>gaussian</type>

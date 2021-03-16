@@ -354,4 +354,49 @@
     </inertial>
   </link>
 
+  <gazebo reference="end_effector_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <!-- Camera -->
+  <joint type="fixed" name="camera_joint">
+    <origin xyz="0.0 0.0 0.0" rpy="0 -1.5707 0"/>
+    <child link="camera_link"/>
+    <parent link="gripper_base"/>
+  </joint>
+
+  <link name='camera_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="1.0e-03"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <visual name='camera_link_visual'>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".01 .01 .01"/>
+      </geometry>
+    </visual>
+
+  </link>
+
+  <gazebo reference="camera_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <joint type="fixed" name="camera_optical_joint">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <child link="camera_link_optical"/>
+    <parent link="camera_link"/>
+  </joint>
+
+  <link name="camera_link_optical">
+  </link>
+
 </robot>
