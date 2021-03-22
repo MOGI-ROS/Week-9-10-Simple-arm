@@ -10,7 +10,7 @@
   <!-- Inititalize it's position in the desired location inside the world -->
   <arg name="x" default="0"/>
   <arg name="y" default="0"/>
-  <arg name="z" default="1.05"/>
+  <arg name="z" default="1.04"/>
   <arg name="roll" default="0"/>
   <arg name="pitch" default="0"/>
   <arg name="yaw" default="0"/>
