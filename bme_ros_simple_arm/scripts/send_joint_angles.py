@@ -21,6 +21,7 @@ trajectory_command.joint_names = joint_names
 trajectory_command.header.stamp = rospy.Time.now()
 
 point = JointTrajectoryPoint()
+#['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
 point.positions = [1.0, 0.5, 0.5, 0.0, 0.0, 0.0]
 point.velocities = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 point.time_from_start = rospy.rostime.Duration(1,0)
