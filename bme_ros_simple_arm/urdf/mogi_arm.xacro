@@ -168,7 +168,7 @@
 
   <!-- Wrist joint -->
   <joint name="wrist_joint" type="revolute">
-    <limit lower="-1.5708" upper="1.5708" effort="54.0" velocity="3.14"/>
+    <limit lower="-2.3562" upper="2.3562" effort="54.0" velocity="3.14"/>
     <parent link="forearm_link"/>
     <child link="wrist_link"/>
     <axis xyz="0 1 0"/>
