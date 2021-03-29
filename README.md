@@ -9,6 +9,9 @@
 [image7]: ./assets/elbow_2.png "elbow"
 [image8]: ./assets/wrist_1.png "wrist"
 [image9]: ./assets/wrist_2.png "wrist"
+[image10]: ./assets/links.png "links"
+[image11]: ./assets/gripper_1.png "gripper"
+[image12]: ./assets/gripper_2.png "gripper"
 
 # 9. - 10. hét - robotkarok
 
@@ -51,6 +54,8 @@ Vegyük észre, hogy van egy apró változás a `world.launch` fájlban, ugyanis
 ```
 
 # Robot kar építése URDF-fel
+
+![alt text][image10]
 
 ## base_link
 
@@ -300,15 +305,199 @@ Láthatjuk, hogy a Gazebo szimulációban nem tudjuk olyan egyszerűen mozgatni 
 
 ## gripper
 
+Először adjuk hozzá a gripperünk alapját:
 
+```xml
+  <!-- Gripper base link -->
+  <link name="gripper_base">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.00009" ixy="0.0" ixz="0.0"
+               iyy="0.00009" iyz="0.0"
+               izz="0.00002"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <box size=".05 .1 .01"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <box size=".05 .1 .01"/>
+      </geometry>
+      <material name="grey"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
 
-## 3D modell
+  <gazebo reference="gripper_base">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+```
 
-# Robot betöltése Gazebo-ba
+Majd ezek után a jobb és bal ujjakat:
+```xml
+  <!-- Left finger joint -->
+  <joint name="left_finger_joint" type="prismatic">
+    <limit lower="0" upper="0.04" effort="100.0" velocity="4.0"/>
+    <parent link="gripper_base"/>
+    <child link="left_finger"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0.0 0.01 0.045" />
+  </joint>
+
+  <!-- Left finger link -->
+  <link name="left_finger">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.00009" ixy="0.0" ixz="0.0"
+               iyy="0.00009" iyz="0.0"
+               izz="0.00002"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <material name="blue"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+  <gazebo reference="left_finger">
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <mu1>15</mu1>
+    <mu2>15</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.002</minDepth>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+  <!-- Right finger joint -->
+  <joint name="right_finger_joint" type="prismatic">
+    <limit lower="0" upper="0.04" effort="100.0" velocity="4.0"/>
+    <parent link="gripper_base"/>
+    <child link="right_finger"/>
+    <axis xyz="0 -1 0"/>
+    <origin xyz="0.0 -0.01 0.045" />
+  </joint>
+
+  <!-- Right finger link -->
+  <link name="right_finger">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.00009" ixy="0.0" ixz="0.0"
+               iyy="0.00009" iyz="0.0"
+               izz="0.00002"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <material name="blue"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+  <gazebo reference="right_finger">
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <mu1>15</mu1>
+    <mu2>15</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.002</minDepth>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+```
+
+Vegyük észre, hogy az ujjaknak megváltoztatjuk a mechanikai tulajdonságait, többek között a surlódását, ami ahhoz kell, hogy fogni tudjunk majd a gripperrel.
+
+![alt text][image11]
+
+![alt text][image12]
 
 # Transmission és Controller
 
-# Jointok mozgatása
+Ahhoz, hogy a szimulált robotkarunkat meg tudjuk mozdítani végre kell hajtanunk néhány lépést.
+
+Először is adjuk hozzá a `transmission.xacro` és a `mogi_arm.gazebo` fájlokat az urdf-ünkhöz:
+```xml
+  <!-- Transmisions -->
+  <xacro:include filename="$(find bme_ros_simple_arm)/urdf/transmission.xacro" />
+  <!-- Gazebo plugin -->
+  <xacro:include filename="$(find bme_ros_simple_arm)/urdf/mogi_arm.gazebo" />
+```
+
+Ha ezután elindítjuk a `spawn_robot.launch` fájlt, a következő üzeneteket látjuk majd a konzolban:
+```console
+[ INFO] [1617044019.576815200]: Loading gazebo_ros_control plugin
+[ INFO] [1617044019.577572300]: Starting gazebo_ros_control plugin in namespace: /
+[ INFO] [1617044019.584272700]: gazebo_ros_control plugin is waiting for model URDF in parameter [robot_description] on the ROS param server.
+[ERROR] [1617044019.730203800]: No p gain specified for pid.  Namespace: /gazebo_ros_control/pid_gains/shoulder_pan_joint
+[ERROR] [1617044019.732750200]: No p gain specified for pid.  Namespace: /gazebo_ros_control/pid_gains/shoulder_lift_joint
+[ERROR] [1617044019.735765000]: No p gain specified for pid.  Namespace: /gazebo_ros_control/pid_gains/elbow_joint
+[ERROR] [1617044019.738999900]: No p gain specified for pid.  Namespace: /gazebo_ros_control/pid_gains/wrist_joint
+[ERROR] [1617044019.742558100]: No p gain specified for pid.  Namespace: /gazebo_ros_control/pid_gains/left_finger_joint
+[ERROR] [1617044019.748125500]: No p gain specified for pid.  Namespace: /gazebo_ros_control/pid_gains/right_finger_joint
+[ INFO] [1617044019.772403000]: Loaded gazebo_ros_control.
+```
+
+Ez azt jelenti, hogy a szimulált hardware interfészeink működnek, a ROS control csomagja megtalálta őket, de ezzel még nincs vége a feladatnak, hiszen továbbra sem tudjuk mozgatni a kart. A mozgatáshoz az `rqt_joint_trajectory_controller`-ét fogjuk használni, amit így tudunk elindítani:
+
+```console
+rosrun rqt_joint_trajectory_controller rqt_joint_trajectory_controller
+```
+
+Azonban ez még nem látja a controller-t. Ehhez fel kell paramétereznünk a `controller_manager`-t, amit a `spawn_robot.launch` módosításával tudunk megtenni:
+
+```xml
+  <!-- Send joint values-->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="false"/>
+  </node>
+```
+
+Az eredeti `joint state publisher` node-ot cseréljük ki a következőre:
+
+```xml
+  <!-- Joint_state_controller -->
+  <rosparam file="$(find bme_ros_simple_arm)/controller/joint_state_controller.yaml" command="load"/>
+  <node name="joint_state_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_controller" respawn="false" output="screen"/>
+
+  <!-- Start this controller -->
+  <rosparam file="$(find bme_ros_simple_arm)/controller/arm_controller.yaml" command="load"/>
+  <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller" respawn="false" output="screen"/>
+```
+
+Ha most indítjuk el a `spawn_robot.launch` fájlt, akkor láthatjuk, hogy megmaradt továbbra is a figyelmeztetés:
+```console
+No p gain specified for pid.
+```
+
+Másrészt viszont működik a controllerünk, és tudjuk mozgatni a robotkart a fizikai szimulációban!
+
+# 3D modell
 
 # Megfogás
 
