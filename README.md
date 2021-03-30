@@ -34,6 +34,12 @@
 [image32]: ./assets/camera_1.png "Camera"
 [image33]: ./assets/camera_2.png "Camera"
 [image34]: ./assets/camera_3.png "Camera"
+[image35]: ./assets/joint_control_1.png "Joints"
+[image36]: ./assets/joint_control_2.png "Joints"
+[image37]: ./assets/joint_control_3.png "Joints"
+[image38]: ./assets/ik_1.png "IK"
+[image39]: ./assets/ik_2.png "IK"
+[image40]: ./assets/ik_3.png "IK"
 
 # 9. - 10. hét - robotkarok
 
@@ -1107,5 +1113,227 @@ Ehhez az asztali kamera pluginjét változtassuk meg a következőre:
 ![alt text][image34]
 
 # Robotkar mozgatása ROS node-dal
+Eddig a kar joint-jait az `rqt_joint_trajectory_controller` segítségével mozgattuk, de nézzük meg hogyan mozgathatnánk ezt a saját ROS node-unkból!
+
+Ehhez először nézzük meg alaposabban az `rqt_joint_trajectory_controller`-t! Indítsuk el a szimulációt és az `rqt_joint_trajectory_controller`-t is, és nézzuk meg a ROS node-ok listáját:
+
+```console
+david@DavidsLenovoX1:~/bme_catkin_ws$ rosnode list
+/gazebo
+/gazebo_gui
+/robot_state_publisher
+/rosout
+/rqt_gui_py_node_7444
+/rviz
+```
+
+Nézzük meg a `rqt_gui_py_node_7444`-t alaposabban:
+```console
+david@DavidsLenovoX1:~/bme_catkin_ws$ rosnode info /rqt_gui_py_node_7444
+--------------------------------------------------------------------------------
+Node [/rqt_gui_py_node_7444]
+Publications:
+ * /arm_controller/command [trajectory_msgs/JointTrajectory]
+ * /rosout [rosgraph_msgs/Log]
+
+Subscriptions:
+ * /arm_controller/state [control_msgs/JointTrajectoryControllerState]
+ * /clock [rosgraph_msgs/Clock]
+
+Services:
+ * /rqt_gui_py_node_7444/get_loggers
+ * /rqt_gui_py_node_7444/set_logger_level
+
+...
+```
+
+Ezek közül számunkra az `/arm_controller/command` topic érdekes elsősorban, ami `trajectory_msgs/JointTrajectory` típusú!
+
+A további keresgéléshez használjuk az `rqt`-t:
+![alt text][image35]
+
+Láthatjuk, hogy ebben a topicban egyrészt felsoroljuk a controllerhez tartozó jointokat, illetve azok szögét. Az `effort`, `velocities` és `accelerations` mezőkkel most nem foglalkozunk! A `time_from_start` értéke pedig a `speed scaling` csúszka alapján állítódik be. Nincs tehát más dolgunk, mint ilyen `JointTrajectory` üzeneteket küldeni az `/arm_controller/command` topicba!
+
+Készítsük el a `send_joint_angles.py` node-unkat:
+```python
+#!/usr/bin/env python
+
+import rospy
+
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+
+rospy.init_node('send_joint_angles')
+
+pub = rospy.Publisher('/arm_controller/command', JointTrajectory, queue_size=1)
+
+controller_name = "arm_controller"
+joint_names = rospy.get_param("/%s/joints" % controller_name)
+
+rospy.loginfo("Joint names: %s" % joint_names)
+
+rate = rospy.Rate(10)
+
+trajectory_command = JointTrajectory()
+
+trajectory_command.joint_names = joint_names
+trajectory_command.header.stamp = rospy.Time.now()
+
+point = JointTrajectoryPoint()
+#['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
+point.positions = [0.0, 0.91, 1.37, -0.63, 0.3, 0.3]
+point.velocities = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+point.time_from_start = rospy.rostime.Duration(1,0)
+
+trajectory_command.points = [point]
+
+while not rospy.is_shutdown():
+    pub.publish(trajectory_command)
+    rate.sleep()
+```
+![alt text][image36]
+
+Próbáljuk ki egy másik pozícióban is:
+```python
+point.positions = [-0.45, 0.72, 1.84, -1.0, 0.3, 0.3]
+```
+![alt text][image37]
 
 # Inverz kinematika
+Gyakorlatban azonban nem igazán kényelmes a jointok szögére hivatkozni a kar mozgatásakor. Arra, hogy a robotkarunk megfogóját (TCP) a kívánt pozícióba juttassuk meg kell oldanunk a robotkarunk inverz kinematikai problémáját. Szerencsére egy nagyon egyszerű geometriával rendelkező robotkart építettünk, így az inverz kinematika megoldását egyszerűen, héhány szögfüggvény segítségével kiszámíthatjuk!
+
+![alt text][image40]
+
+A 4 szabadási fokú karunk esetén az első joint csak a robotkar forgatására szolgál, így a TCP kívánt y koordinátája alapján meghatározhatjuk az első joint (`j0`) szögét. Az x és y koordinátákból tehát számolható:
+
+```python
+j0 = math.atan(coords[1]/coords[0])
+```
+
+Ahol a `coords` egy olyan lista, ami a TCP kívánt koordinátáit tartalmazzák `[x, y, z]`.
+
+![alt text][image39]
+
+Az inverz kinematikai megoldó függvényünknek a gripperünk szöge egy paraméter, ami nem a `wrist`-hez képesti szöget jelenti, hanem a robot álló talpához rögzített koordinátarendszerhez képest. Ennek megfelelően tehát a `0 rad` gripper szög mindig a vízszintes, a `pi/2 rad` pedig mindig a lefelé néző függeleges grippert jelenti. Mivel a 4. csukló (`j3`) szögét ez alapján határozzuk meg, az inverz kinematikai problémát már csak 2 csuklóra (`j1` és `j2`) kell megoldanunk.
+
+Ehhez újraszámoljuk a koordinátákat, az egyszerűség kedvéért a `wrist` csuklóra.
+
+![alt text][image38]
+
+```python
+def inverse_kinematics(coords, gripper_status, gripper_angle = 0):
+    '''
+    Calculates the joint angles according to the desired TCP coordinate and gripper angle
+    :param coords: list, desired [X, Y, Z] TCP coordinates
+    :param gripper_status: string, can be `closed` or `open`
+    :param gripper_angle: float, gripper angle in woorld coordinate system (0 = horizontal, pi/2 = vertical)
+    :return: list, the list of joint angles, including the 2 gripper fingers
+    '''
+    # link lengths
+    ua_link = 0.2
+    fa_link = 0.25
+    tcp_link = 0.175
+    # z offset (robot arm base height)
+    z_offset = 0.1
+    # default return list
+    angles = [0,0,0,0,0,0]
+
+    # Calculate the shoulder pan angle from x and y coordinates
+    j0 = math.atan(coords[1]/coords[0])
+
+    # Re-calculate target coordinated to the wrist joint (x', y', z')
+    x = coords[0] - tcp_link * math.cos(j0) * math.cos(gripper_angle)
+    y = coords[1] - tcp_link * math.sin(j0) * math.cos(gripper_angle)
+    z = coords[2] - z_offset + math.sin(gripper_angle) * tcp_link
+
+    # Solve the problem in 2D using x" and z'
+    x = math.sqrt(y*y + x*x)
+
+    # Let's calculate auxiliary lengths and angles
+    c = math.sqrt(x*x + z*z)
+    alpha = math.asin(z/c)
+    beta = math.pi - alpha
+    # Apply law of cosines
+    gamma = math.acos((ua_link*ua_link + c*c - fa_link*fa_link)/(2*c*ua_link))
+
+    j1 = math.pi/2.0 - alpha - gamma
+    j2 = math.pi - math.acos((ua_link*ua_link + fa_link*fa_link - c*c)/(2*ua_link*fa_link)) # j2 = 180 - j2'
+    delta = math.pi - (math.pi - j2) - gamma # delta = 180 - j2' - gamma
+
+    j3 = math.pi + gripper_angle - beta - delta
+
+    angles[0] = j0
+    angles[1] = j1
+    angles[2] = j2
+    angles[3] = j3
+
+    if gripper_status == "open":
+        angles[4] = 0.04
+        angles[5] = 0.04
+    elif gripper_status == "closed":
+        angles[4] = 0.01
+        angles[5] = 0.01
+    else:
+        angles[4] = 0.04
+        angles[5] = 0.04
+
+    return angles
+```
+
+Az inverz kinematikai megoldófggvényünket érdemes letesztelnünk a direkt kinematikai megoldóképletünkkel, ami sokkal egyszerűbb a robotkarunkra:
+
+```python
+def forward_kinematics(joint_angles):
+    '''
+    Calculates the TCP coordinates from the joint angles
+    :param joint_angles: list, joint angles [j0, j1, j2, j3, ...]
+    :return: list, the list of TCP coordinates
+    '''
+    ua_link = 0.2
+    fa_link = 0.25
+    tcp_link = 0.175
+    z_offset = 0.1
+
+    x = math.cos(joint_angles[0]) * (math.sin(joint_angles[1]) * ua_link + math.sin(joint_angles[1] + joint_angles[2]) * fa_link + math.sin(joint_angles[1] + joint_angles[2] + joint_angles[3]) * tcp_link)
+    y = math.sin(joint_angles[0]) * (math.sin(joint_angles[1]) * ua_link + math.sin(joint_angles[1] + joint_angles[2]) * fa_link + math.sin(joint_angles[1] + joint_angles[2] + joint_angles[3]) * tcp_link)
+    z = z_offset + math.cos(joint_angles[1]) * ua_link + math.cos(joint_angles[1] + joint_angles[2]) * fa_link + math.cos(joint_angles[1] + joint_angles[2] + joint_angles[3]) * tcp_link
+
+    return [x,y,z]
+```
+
+Még egy 4 szabadságifokú robotkar esetén is egészen hosszúak lesznek a képletek az egyes koordináták kiszámítására.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
