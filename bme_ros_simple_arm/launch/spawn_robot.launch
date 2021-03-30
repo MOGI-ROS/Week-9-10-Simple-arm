@@ -33,9 +33,9 @@
   <rosparam file="$(find bme_ros_simple_arm)/controller/pid.yaml"/>
   <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller" respawn="false" output="screen"/>
 
-  <!-- Spawn mogi_bot -->
+  <!-- Spawn mogi_arm -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
-    args="-urdf -param robot_description -model mogi_bot 
+    args="-urdf -param robot_description -model mogi_arm 
             -x $(arg x) -y $(arg y) -z $(arg z)
             -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
 
