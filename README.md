@@ -12,6 +12,20 @@
 [image10]: ./assets/links.png "links"
 [image11]: ./assets/gripper_1.png "gripper"
 [image12]: ./assets/gripper_2.png "gripper"
+[image13]: ./assets/rqt_1.png "rqt"
+[image14]: ./assets/rqt_2.png "rqt"
+[image15]: ./assets/3d_model_1.png "3D model"
+[image16]: ./assets/3d_model_2.png "3D model"
+[image17]: ./assets/init_1.png "Init"
+[image18]: ./assets/dynamic_reconfigure_1.png "Dynamic reconfigure"
+[image19]: ./assets/dynamic_reconfigure_2.png "Dynamic reconfigure"
+[image20]: ./assets/grab_1.png "Grab"
+[image21]: ./assets/grab_2.png "Grab"
+[image22]: ./assets/grab_3.png "Grab"
+[image23]: ./assets/attach_1.png "Attach"
+[image24]: ./assets/attach_2.png "Attach"
+[image25]: ./assets/attach_3.png "Attach"
+[image26]: ./assets/attach_4.png "Attach"
 
 # 9. - 10. hét - robotkarok
 
@@ -469,6 +483,8 @@ Ez azt jelenti, hogy a szimulált hardware interfészeink működnek, a ROS cont
 rosrun rqt_joint_trajectory_controller rqt_joint_trajectory_controller
 ```
 
+![alt text][image13]
+
 Azonban ez még nem látja a controller-t. Ehhez fel kell paramétereznünk a `controller_manager`-t, amit a `spawn_robot.launch` módosításával tudunk megtenni:
 
 ```xml
@@ -497,19 +513,246 @@ No p gain specified for pid.
 
 Másrészt viszont működik a controllerünk, és tudjuk mozgatni a robotkart a fizikai szimulációban!
 
+![alt text][image14]
+
 # 3D modell
+
+Mielőtt továbbmennénk a gripper használatához, cseréljük le az egyszerű narancssárga hengereket 3D modellekre!
+Ezeket a meshes mappában találjuk, itt vannak az eredeti CAD fájlok és az abból készített Collada meshek is.
+
+Ezeket a sorokat kell beillesztenünk a megfelelő helyekre az urdf-ben:
+```xml
+<mesh filename = "package://bme_ros_simple_arm/meshes/shoulder.dae"/>
+<mesh filename = "package://bme_ros_simple_arm/meshes/upper_arm.dae"/>
+<mesh filename = "package://bme_ros_simple_arm/meshes/forearm.dae"/>
+<mesh filename = "package://bme_ros_simple_arm/meshes/wrist.dae"/>
+```
+
+Természetesen ne felejtsük el kitörölni (vagy kikommentelni) az eredeti hengereket:
+```xml
+<!--cylinder radius="0.1" length="0.05"/-->
+```
+
+Illetve a színek megfelelő kezelése miatt a Gazebo színeket is:
+```xml
+<!--gazebo reference="shoulder_link">
+  <material>Gazebo/Orange</material>
+</gazebo-->
+```
+
+Ezek után nézzük meg a kart a `check_urdf.launch` fájllal:
+![alt text][image15]
+
+Ha elégedettek vagyunk az eredménnyel, akkor nézzük meg a szimulációban is!
+![alt text][image16]
+
+# Kezdeti állapot:
+
+Kiegészíthetjük az urdf_spawner-ünket további paraméterekkel, megadhatjuk a jointok kezdeti szögét (tehát nem az urdf fájlban kell módosítanunk hozzá), illetve akár el is indíthatjuk a szimulációt a spawn végén.
+
+```xml
+  <!-- Spawn mogi_arm -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
+    args="-urdf -param robot_description -model mogi_arm 
+            -x $(arg x) -y $(arg y) -z $(arg z)
+            -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)
+            -J elbow_joint 1.5707
+            -unpause"/>
+```
+
+Ennek ellenére ezt a megoldást, ha lehetséges, érdemes elkerülnünk, van egy [terjedelmes GitHub](https://github.com/ros-simulation/gazebo_ros_pkgs/issues/93) issue róla, miért nem működik ez kellően robosztusan.
+
+![alt text][image17]
 
 # Megfogás
 
+Fizikai szimulációban a gripperrel történő megfogás szimulációja egy nagyon nehéz feladat, ezért a legtöbb esetben az ilyen fogásokat nem is fizikával hajtják végre, hanem egy ütközésdetektálás után létrehozhatunk egy fix jointot a megfogó és a megfogandó tárgy között.
+
+Mind a két módszerre nézünk példát, először kezdjük a nehezebb úttal!
+
 ## Fizikai szimulációval
+A fizikai szimulációval való fogás azért a nehezebb út, mert position joint interface-eket használunk az egyes csuklókban. Emlékzetetőül, így adtuk meg a jointokat a `transmission.xacro` fájlban:
 
-### Inerciaszámítás
+```xml
+<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+```
 
-### PID tuning
+Használhatnánk más joint típust is, például EffortJointInterface-t, de ezt később a MoveIt!-tal való ismerkedés miatt nem lenne célravezető.
+
+A position joint interface miatt látjuk a Gazebo figyelmeztetését:
+```console
+[ERROR] [1617090695.832931300]: No p gain specified for pid.
+```
+Abban az esetben ugyanis, ha nem adjuk meg a szabályozó paramétereket, a Gazebo egy úgy nevezett *kinematic* modellként kezeli a robotunkat, nem működik rá fizikai szimuláció, kizárólag a transzformációk mozgatják. Ebben az esetben a fizikai motor nem tudja kiszámolni a csuklókban ébredő erőket és nyomatékokat, emiatt a fogás sem fog működni, ahol a surlódás segítségével maradna a megfogóban a megfogott alkatrész.
+
+Ezt könnyedén kipróbálhatjuk, ha elindítjuk a szimulációt, és megpróbáljuk megfogni az egyik objektumot:
+![alt text][image20]
+
+Hiába zárjuk össze a gripper ujjait, ha megpróbáljuk felemelni a piros hasábot, az egyszerűen *kicsúszik* az ujjak közül. Ha megpróbáljuk növelni a szorítást, akkor pedig *kiugrik* a megfogóból:
+![alt text][image21]
+
+Ahhoz, hogy a fizikai motor meg tudja határozni az erőket és nyomatékokat be kell hangoljuk a szimulált poisition joint interface-ek szimulált PID szabályozóját!
+
+### PID hangolás
+
+Erre szerencsére a ROS esetén fel tudjuk használni a már megismert `rqt_reconfigure` csomagot, amit így indíthatunk el:
+```console
+rosrun rqt_reconfigure rqt_reconfigure
+```
+![alt text][image18]
+
+Azonban itt még nem látjuk a szabályozók paramétereit. Ehhez be kell töltsünk egy kezdeti paraméterlistát, ami a `pid.yaml` fájlban található a `controller` mappában.
+
+Adjuk hozzá tehát ennek a betöltését a `spawn_robot.launch` fájlhoz:
+```xml
+<rosparam file="$(find bme_ros_simple_arm)/controller/pid.yaml"/>
+```
+
+Majd indítsuk újra a szimulációt és az `rqt_reconfigure`-t.
+![alt text][image19]
+
+Ha sikerült elfogadható PID szabályozót hangolnunk, akkor ki is tudjuk próbálni, hogy működik-e a fogás:
+![alt text][image22]
+
+Láthatjuk, hogy sikerült a fizikai szimuláció és a súrlódás segítségével megemelnünk a piros hasábot, ez hatalmas eredmény a saját részünkről és a fizikai motor részéről is!
 
 ## Tárgy rögzítésével
+A könnyebik út az, ha maradunk a robotunk kinematikai szimulációjánál, nem hangolunk PID szabályozót, és helyette fogás esetén létrehozunk egy fix linket a megfogó és a megfogandó tárgy között. Nem szabad ezt a *könnyebik* utat lebecsülni azonban, hiszen valójában a szimulált PID szabályozóink és a fizikai szimuláció hangolgatásából nem sok eredményt tudunk visszavezetni a valódi robotkarunk esetére.
+
+Ez a könnyebik út viszont némi programozással jár, illetve szükségünk lesz egy olyan csomagra, amit forrásból kell fordítanunk:
+[https://github.com/MOGI-ROS/gazebo_ros_link_attacher](https://github.com/MOGI-ROS/gazebo_ros_link_attacher)
+
+Ha sikerült lefordítanunk a csomagot, akkor ezt a plugin-t még el kell helyeznünk a Gazebo világunkban is, mondjuk valahol a fájl végén a </world> tag előtt:
+
+```xml
+    ...
+    <!-- A gazebo links attacher -->
+    <plugin name="ros_link_attacher_plugin" filename="libgazebo_ros_link_attacher.so"/>
+  </world>
+</sdf>
+```
 
 ### Attach/detach
+
+A fix jointok létrehozásához szükségünk lesz a modellek és azon belünk a linkek neveire, amik között a kapcsolatot létre akarjuk hozni. Ezt nagyon könnyen kideríthetjük a Gazeboból:
+
+![alt text][image23]
+
+Ezek után nézzük meg a ROS service-ek listáját is:
+```console
+david@DavidsLenovoX1:~/bme_catkin_ws$ rosservice list
+...
+/link_attacher_node/attach
+/link_attacher_node/detach
+...
+```
+
+Tehát a modell és link nevek alapján paranccsorból is hívhatnánk ezt a ROS service-t a következő formában:
+```bash
+rosservice call /link_attacher_node/attach "model_name_1: 'cube1'
+    link_name_1: 'link'
+    model_name_2: 'cube2'
+    link_name_2: 'link'"
+```
+
+De ehelyett csinálunk egy python scriptet inkább. Hozzuk létre az `attach.py` fájlt a `scripts` mappában:
+```python
+#!/usr/bin/env python
+
+import rospy
+from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
+
+
+if __name__ == '__main__':
+    rospy.init_node('demo_attach_links')
+    rospy.loginfo("Creating ServiceProxy to /link_attacher_node/attach")
+    attach_srv = rospy.ServiceProxy('/link_attacher_node/attach',
+                                    Attach)
+    attach_srv.wait_for_service()
+    rospy.loginfo("Created ServiceProxy to /link_attacher_node/attach")
+
+    # Link them
+    rospy.loginfo("Attaching gripper and red box.")
+    req = AttachRequest()
+    req.model_name_1 = "mogi_arm"
+    req.link_name_1 = "left_finger"
+    req.model_name_2 = "red_box"
+    req.link_name_2 = "link"
+
+    attach_srv.call(req)
+```
+
+Ennek megfelelően csináljuk meg a `detach.py` fájlt is:
+```python
+#!/usr/bin/env python
+
+import rospy
+from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
+
+
+if __name__ == '__main__':
+    rospy.init_node('demo_detach_links')
+    rospy.loginfo("Creating ServiceProxy to /link_attacher_node/detach")
+    attach_srv = rospy.ServiceProxy('/link_attacher_node/detach',
+                                    Attach)
+    attach_srv.wait_for_service()
+    rospy.loginfo("Created ServiceProxy to /link_attacher_node/detach")
+
+    # Link them
+    rospy.loginfo("Detaching gripper and red box.")
+    req = AttachRequest()
+    req.model_name_1 = "mogi_arm"
+    req.link_name_1 = "left_finger"
+    req.model_name_2 = "red_box"
+    req.link_name_2 = "link"
+
+    attach_srv.call(req)
+```
+
+Szedjük ki a PID szabályozónk paramétereit a próba előtt!
+```xml
+<!--rosparam file="$(find bme_ros_simple_arm)/controller/pid.yaml"/-->
+```
+
+Indítsuk el a szimulációt, állítsuk be a kart a megfelelő helyre, és futtassuk le az `attach.py` ROS node-unkat!
+
+A ROS node futtatásának az eredménye:
+```console
+david@DavidsLenovoX1:~/bme_catkin_ws$ rosrun bme_ros_simple_arm attach.py
+[INFO] [1617095533.304533, 0.000000]: Creating ServiceProxy to /link_attacher_node/attach
+[INFO] [1617095533.331539, 0.000000]: Created ServiceProxy to /link_attacher_node/attach
+[INFO] [1617095533.335856, 419.808000]: Attaching gripper and red box.
+```
+
+És ezzel egy időben ezt látjuk a Gazebo szimuláció termináljában:
+```console
+[ INFO] [1617095533.351375100, 419.821000000]: Received request to attach model: 'mogi_arm' using link: 'left_finger' with model: 'red_box' using link: 'link'
+[ INFO] [1617095533.352090600, 419.821000000]: Creating new joint.
+[ INFO] [1617095533.373408200, 419.830000000]: Attach finished.
+[ INFO] [1617095533.379024700, 419.836000000]: Attach was succesful
+```
+Az attach és a piros hasáb megfogása sikerült!
+![alt text][image24]
+
+
+Próbáljuk ki a `detach.py`-t is:
+```console
+david@DavidsLenovoX1:~/bme_catkin_ws$ rosrun bme_ros_simple_arm detach.py
+[INFO] [1617095634.126688, 0.000000]: Creating ServiceProxy to /link_attacher_node/detach
+[INFO] [1617095634.144994, 0.000000]: Created ServiceProxy to /link_attacher_node/detach
+[INFO] [1617095634.160449, 0.000000]: Detaching gripper and red box.
+```
+
+A Gazebo termináljában ezt látjuk:
+```console
+[ INFO] [1617095634.224778700, 476.994000000]: Received request to detach model: 'mogi_arm' using link: 'left_finger' with model: 'red_box' using link: 'link'
+[ INFO] [1617095634.225193200, 476.994000000]: Detach was succesful
+```
+![alt text][image25]
+
+Természetesen az `attach.py` és a `detach.py` nem foglalkozik azza, hogy hogy állítottuk be a kart, tehát attacholhatjuk a piros hasábot akkor is, ha a gripper a közelében sem tartózkodik. Természetesen ez nem túl elegáns megoldás:
+![alt text][image26]
+
 
 ### Collsion érzékelés
 
