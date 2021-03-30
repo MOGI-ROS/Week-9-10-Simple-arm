@@ -15,13 +15,14 @@ if __name__ == '__main__':
     # Link them
     rospy.loginfo("Detaching gripper and red box.")
     req = AttachRequest()
-    req.model_name_1 = "mogi_bot"
+    req.model_name_1 = "mogi_arm"
     req.link_name_1 = "left_finger"
     req.model_name_2 = "red_box"
     req.link_name_2 = "link"
 
     attach_srv.call(req)
-    # From the shell:
+
+    # From command line:
     """
     rosservice call /link_attacher_node/detach "model_name_1: 'cube1'
     link_name_1: 'link'
