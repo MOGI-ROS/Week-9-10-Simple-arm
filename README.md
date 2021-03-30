@@ -26,6 +26,8 @@
 [image24]: ./assets/attach_2.png "Attach"
 [image25]: ./assets/attach_3.png "Attach"
 [image26]: ./assets/attach_4.png "Attach"
+[image27]: ./assets/collision_1.png "Collision"
+[image28]: ./assets/collision_2.png "Collision"
 
 # 9. - 10. hét - robotkarok
 
@@ -753,8 +755,76 @@ A Gazebo termináljában ezt látjuk:
 Természetesen az `attach.py` és a `detach.py` nem foglalkozik azza, hogy hogy állítottuk be a kart, tehát attacholhatjuk a piros hasábot akkor is, ha a gripper a közelében sem tartózkodik. Természetesen ez nem túl elegáns megoldás:
 ![alt text][image26]
 
-
 ### Collsion érzékelés
+Erre egy jó megoldás lehet az, ha szimulálunk egy "ütközőt" a gripperünk egyik (vagy mindkét ujjában).
+
+Adjuk hozzá a contact sensor plugint a `mogi_arm.xacro` fájlhoz:
+```xml
+  <gazebo reference="left_finger">
+    <sensor name="left_finger" type="contact">
+      <always_on>true</always_on>
+      <update_rate>15.0</update_rate> 
+      <contact>
+        <collision>left_finger_collision</collision>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">  
+        <bumperTopicName>contact_vals</bumperTopicName>
+        <frameName>world</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+```
+
+A `left_finger` tehát ha bármivel ütközést érzékel, azt a `contact_vals` topicba fogja küldeni. Nézzük meg ezt a topicot `rqt`-ben:
+![alt text][image27]
+
+A `states` tömb üres, ha nincs ütközés, most mozgassuk a kart a piros hasábhoz, és érintsük hozzá a bal ujjat:
+![alt text][image28]
+
+Készítsünk egy saját ROS node-ot, ami a bal ujj ütközéseit vizsgálja, és kiírja nekünk, hogy mivel érzékel ütközést:
+
+```python
+#!/usr/bin/env python
+
+import rospy
+
+from gazebo_msgs.msg import ContactsState
+
+def get_contacts (msg):
+    if (len(msg.states) == 0):
+        rospy.loginfo("No contacts were detected!")
+    else:
+        if 'left_finger' in msg.states[0].collision1_name:
+            rospy.loginfo("Collision detected with %s." % msg.states[0].collision2_name.split("::")[0])
+        elif 'left_finger' in msg.states[0].collision2_name:
+            rospy.loginfo("Collision detected with %s." % msg.states[0].collision1_name.split("::")[0])
+        else:
+            rospy.loginfo("Unknown collision")
+
+
+
+rospy.init_node('gps_waypoint_follower')
+
+sub_contacts = rospy.Subscriber ('/contact_vals', ContactsState, get_contacts)
+
+rospy.spin()
+```
+
+Indítsuk el és nézzük meg a kimenetét:
+```console
+david@DavidsLenovoX1:~/bme_catkin_ws$ rosrun bme_ros_simple_arm detect_contacts.py
+[INFO] [1617096765.822937, 414.627000]: No contacts were detected!
+...
+[INFO] [1617096776.481473, 421.602000]: No contacts were detected!
+[INFO] [1617096776.576807, 421.669000]: Collision detected with red_box.
+[INFO] [1617096776.678381, 421.736000]: Collision detected with red_box.
+[INFO] [1617096776.788307, 421.813000]: Collision detected with red_box.
+[INFO] [1617096776.883865, 421.871000]: Collision detected with red_box.
+[INFO] [1617096776.982253, 421.941000]: Collision detected with red_box.
+[INFO] [1617096777.099881, 422.006000]: Collision detected with red_box.
+```
+
+Ezt tehát összeköthetjük a korábbi `attach.py` node-unkkal, és dinamikusan tudjuk állítani a megfogandó tárgy nevét.
 
 # Szimulált kamerák
 
