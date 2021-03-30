@@ -28,6 +28,12 @@
 [image26]: ./assets/attach_4.png "Attach"
 [image27]: ./assets/collision_1.png "Collision"
 [image28]: ./assets/collision_2.png "Collision"
+[image29]: ./assets/ee_1.png "End effector"
+[image30]: ./assets/ee_2.png "End effector"
+[image31]: ./assets/ee_3.png "End effector"
+[image32]: ./assets/camera_1.png "Camera"
+[image33]: ./assets/camera_2.png "Camera"
+[image34]: ./assets/camera_3.png "Camera"
 
 # 9. - 10. hét - robotkarok
 
@@ -826,7 +832,279 @@ david@DavidsLenovoX1:~/bme_catkin_ws$ rosrun bme_ros_simple_arm detect_contacts.
 
 Ezt tehát összeköthetjük a korábbi `attach.py` node-unkkal, és dinamikusan tudjuk állítani a megfogandó tárgy nevét.
 
+# End effector
+Nagyban megkönnyítheti a dolgunkat, ha csinálunk egy olyan link-et a robotkarunkon, ami csak arra jó, hogy mutassa a gripperünk megfogási pontját, ezt nevezzük robotkarok esetén TCP-nek (tool center point).
+
+Tegyünk egy kis piros kockát a gripper ujjai közé, amit látunk ugyan RVizben és a szimulációban, de nem ütközik semmivel! Egészítsük ki a `mogi_arm.xacro` fájlunkat:
+
+```xml
+  <!-- End effector joint -->
+  <joint name="end_effector_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
+    <parent link="wrist_link"/>
+    <child link="end_effector_link"/>
+  </joint>
+
+  <!-- End effector link -->
+  <link name="end_effector_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+      </geometry>
+      <material name="red"/>
+     </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0e-03" />
+      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
+               iyy="1.0e-03" iyz="0.0"
+               izz="1.0e-03" />
+    </inertial>
+  </link>
+
+  <gazebo reference="end_effector_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+```
+Láthatjuk, hogy az `end_effector_link`-nek nincs collision property-je! Nézzük meg a szimulációban!
+![alt text][image29]
+
+És ugyanez RViz-ben:
+![alt text][image30]
+Próbáljuk is ki, hogy ez a kis piros kocka valóban nem ütközik semmivel!
+![alt text][image31]
+
 # Szimulált kamerák
+Adjunk hozzá egy gripper kamerát és egy fix, asztalhoz rögzített kamerát a szimulációnkhoz, így RViz-ben is látni fogjuk mi történik!
+Ehhez a már jól megszokott módon létrehozzuk a `camera` és `camera_optical` linkeket az URDF fájlban, és hozzáadjuk a kamerák szimulációját a `mogi_arm.gazebo` fájlhoz is!
+
+```xml
+  <!-- Gripper camera -->
+  <joint type="fixed" name="gripper_camera_joint">
+    <origin xyz="0.0 0.0 0.0" rpy="0 -1.5707 0"/>
+    <child link="gripper_camera_link"/>
+    <parent link="gripper_base"/>
+  </joint>
+
+  <link name='gripper_camera_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="1.0e-03"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".01 .01 .01"/>
+      </geometry>
+    </visual>
+
+  </link>
+
+  <gazebo reference="gripper_camera_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <joint type="fixed" name="gripper_camera_optical_joint">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <child link="gripper_camera_link_optical"/>
+    <parent link="gripper_camera_link"/>
+  </joint>
+
+  <link name="gripper_camera_link_optical">
+  </link>
+
+  <!-- Table camera -->
+  <joint type="fixed" name="table_camera_joint">
+    <origin xyz="1.0 0.4 0.2" rpy="0 0 3.6652"/>
+    <child link="table_camera_link"/>
+    <parent link="world"/>
+  </joint>
+
+  <link name='table_camera_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="1.0e-03"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+    </visual>
+
+  </link>
+
+  <gazebo reference="table_camera_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <joint type="fixed" name="table_camera_optical_joint">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <child link="table_camera_link_optical"/>
+    <parent link="table_camera_link"/>
+  </joint>
+
+  <link name="table_camera_link_optical">
+  </link>
+```
+Valamint:
+```xml
+  <!-- Gripper camera -->
+  <gazebo reference="gripper_camera_link">
+    <sensor type="camera" name="gripper_camera">
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+      <camera name="gripper_camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.005</near>
+          <far>5.0</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>gripper_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>gripper_camera_link_optical</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Table camera -->
+  <gazebo reference="table_camera_link">
+    <sensor type="camera" name="table_camera">
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+      <camera name="table_camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.005</near>
+          <far>5.0</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>table_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>table_camera_link_optical</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+```
+![alt text][image32]
+
+![alt text][image33]
+
+# RGBD kamera
+Cseréljük le az asztali kameránkat egy RGBD kamerára!
+Ehhez az asztali kamera pluginjét változtassuk meg a következőre:
+
+```xml
+  <!-- Table RGBD camera -->
+  <gazebo reference="table_camera_link">
+    <sensor type="depth" name="table_camera">
+      <always_on>1</always_on>
+      <update_rate>20.0</update_rate>
+      <visualize>false</visualize>             
+      <camera>
+        <horizontal_fov>1.047</horizontal_fov>  
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>B8G8R8</format>
+        </image>
+        <clip>
+          <near>0.5</near>
+          <far>10.0</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+        <baseline>0.2</baseline>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>depth_camera</cameraName>
+        <frameName>table_camera_link_optical</frameName>                   
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <depthImageTopicName>depth/image_raw</depthImageTopicName>
+        <pointCloudTopicName>depth/points</pointCloudTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>              
+        <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>            
+        <pointCloudCutoff>0.5</pointCloudCutoff>
+        <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
+        <hackBaseline>0.0</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        <CxPrime>0.0</CxPrime>
+        <Cx>0.0</Cx>
+        <Cy>0.0</Cy>
+        <focalLength>0.0</focalLength>
+      </plugin>
+    </sensor>
+  </gazebo>
+```
+
+![alt text][image34]
 
 # Robotkar mozgatása ROS node-dal
 
