@@ -46,6 +46,33 @@
 # Hova fogunk eljutni?
 <a href="https://youtu.be/XveJMrCh9vw"><img height="400" src="./assets/youtube1.png"></a> 
 
+# Tartalomjegyzék
+1. [Kezdőcsomag](#Kezdőcsomag)  
+2. [Gazebo világ](#Gazebo-világ)
+3. [Robot kar építése URDF-fel](#Robot-kar-építése-URDF-fel)  
+3.1. [base_link](#base_link)  
+3.2. [shoulder linkek](#shoulder-linkek)  
+3.3. [könyök](#könyök)
+3.4. [csukló](#csukló)
+3.5. [gripper](#gripper)
+4. [Transmission és Controller](#Transmission-és-Controller)
+5. [3D modell](#3D-modell)
+6. [Kezdeti állapot](#Kezdeti-állapot)
+7. [Megfogás](#Megfogás)  
+7.1. [Fizikai szimulációval](#Fizikai-szimulációval)  
+7.1.1. [PID hangolás](#PID-hangolás)  
+7.2. [Tárgy rögzítésével](#Tárgy-rögzítésével)  
+7.2.1. [Attach/detach](#Attach/detach)  
+7.2.2. [Collsion érzékelés](#Collsion-érzékelés)  
+8. [End effector](#End-effector)
+9. [Szimulált kamerák](#Szimulált-kamerák)  
+9.1. [RGBD kamera](#RGBD-kamera)
+10. [Robotkar mozgatása ROS node-dal](#Robotkar-mozgatása-ROS-node-dal)
+11. [Inverz kinematika](#Inverz-kinematika)  
+11.1. [Teszt](#Teszt)  
+11.2. [IK ROS node](#IK-ROS-node)
+
+
 # Kezdőcsomag
 
 A kiindulási csomag tartalmazza a Gazebo világot a launch fájlokat és az RViz konfigurációját, minden mást mi fogunk felépíteni közösen!
@@ -596,7 +623,7 @@ Ezek után nézzük meg a kart a `check_urdf.launch` fájllal:
 Ha elégedettek vagyunk az eredménnyel, akkor nézzük meg a szimulációban is!
 ![alt text][image16]
 
-# Kezdeti állapot:
+# Kezdeti állapot
 
 Kiegészíthetjük az urdf_spawner-ünket további paraméterekkel, megadhatjuk a jointok kezdeti szögét (tehát nem az urdf fájlban kell módosítanunk hozzá), illetve akár el is indíthatjuk a szimulációt a spawn végén.
 
@@ -1095,7 +1122,7 @@ Valamint:
 
 ![alt text][image33]
 
-# RGBD kamera
+## RGBD kamera
 Cseréljük le az asztali kameránkat egy RGBD kamerára!
 Ehhez az asztali kamera pluginjét változtassuk meg a következőre:
 
@@ -1363,7 +1390,7 @@ joint_angles = inverse_kinematics([0.4, 0.2, 0.15], "closed", 0)
 print(forward_kinematics(joint_angles))
 ```
 
-## IK node
+## IK ROS node
 Ha elégedettek vagyunk az eredménnyel, készítsünk egy `inverse_kinematics.py` ROS node-ot, ami nagyon hasonlít majd a `send_joint_angles.py` node-unkhoz!
 
 ```python
