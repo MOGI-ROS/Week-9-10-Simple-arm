@@ -1302,9 +1302,83 @@ def forward_kinematics(joint_angles):
 
 Még egy 4 szabadságifokú robotkar esetén is egészen hosszúak lesznek a képletek az egyes koordináták kiszámítására.
 
+## Teszt
+Készítsük el a `forward_kinematics.py` fájlt, amiben le tudjuk tesztelni a fenti két függvényünket!
 
+```python
+#!/usr/bin/env python
 
+import math
+```
 
+Másoljuk bele a fenti két függvényt is, majd próbáljuk ki pár poziícióval!
+
+```python
+joint_angles = inverse_kinematics([0.35, 0, 0.05], "closed", math.pi/2)
+print(forward_kinematics(joint_angles))
+
+joint_angles = inverse_kinematics([0.5, 0, 0.05], "closed", 0)
+print(forward_kinematics(joint_angles))
+
+joint_angles = inverse_kinematics([0.4, 0, 0.15], "closed", 0)
+print(forward_kinematics(joint_angles))
+
+joint_angles = inverse_kinematics([0.4, 0.2, 0.15], "closed", 0)
+print(forward_kinematics(joint_angles))
+```
+
+## IK node
+Ha elégedettek vagyunk az eredménnyel, készítsünk egy `inverse_kinematics.py` ROS node-ot, ami nagyon hasonlít majd a `send_joint_angles.py` node-unkhoz!
+
+```python
+#!/usr/bin/env python
+
+import rospy
+import math
+
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+```
+
+Az inverz kinematikát számolú függvényünk ugyanaz, mint az előbb! Végül a node nagyon haosnló a már korábbi `send_joint_angles.py` node-unkhoz!
+
+```python
+rospy.init_node('send_joint_angles_ik')
+
+pub = rospy.Publisher('/arm_controller/command', JointTrajectory, queue_size=1)
+
+controller_name = "arm_controller"
+joint_names = rospy.get_param("/%s/joints" % controller_name)
+
+rospy.loginfo("Joint names: %s" % joint_names)
+
+rate = rospy.Rate(10)
+
+trajectory_command = JointTrajectory()
+
+trajectory_command.joint_names = joint_names
+
+point = JointTrajectoryPoint()
+#['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
+joint_angles = inverse_kinematics([0.4, 0.2, 0.15], "open", 0)
+
+point.positions = joint_angles
+point.velocities = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+point.time_from_start = rospy.rostime.Duration(1,0)
+
+trajectory_command.points = [point]
+
+while not rospy.is_shutdown():
+    trajectory_command.header.stamp = rospy.Time.now()
+    pub.publish(trajectory_command)
+    rate.sleep()
+```
+
+Próbáljuk ki még néhány pozícióban:
+```python
+joint_angles = inverse_kinematics([0.35, 0, 0.05], "open", math.pi/2)
+joint_angles = inverse_kinematics([0.5, 0, 0.05], "open", 0)
+joint_angles = inverse_kinematics([0.4, 0, 0.15], "open", 0)
+```
 
 
 
