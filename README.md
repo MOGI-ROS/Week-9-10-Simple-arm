@@ -60,14 +60,50 @@ A kezdőprojekt tartalma a következő:
 david@DavidsLenovoX1:~/bme_catkin_ws/src/Week-9-10-Simple-arm/bme_ros_simple_arm$ tree
 .
 ├── CMakeLists.txt
-├── config
-│   ├── costmap_common_params.yaml
-│   ├── dwa_local_planner_params.yaml
+├── controller
+│   ├── arm_controller.yaml
+│   ├── joint_state_controller.yaml
+│   └── pid.yaml
+├── launch
+│   ├── check_urdf.launch
+│   ├── spawn_robot.launch
+│   └── world.launch
+├── meshes
+│   ├── forearm.blend
+│   ├── forearm.dae
+│   ├── forearm.SLDPRT
+│   ├── forearm.STEP
+│   ├── forearm.STL
+│   ├── shoulder.blend
+│   ├── shoulder.dae
+│   ├── shoulder.SLDPRT
+│   ├── shoulder.STEP
+│   ├── shoulder.STL
+│   ├── upper_arm.blend
+│   ├── upper_arm.dae
+│   ├── upper_arm.SLDPRT
+│   ├── upper_arm.STEP
+│   ├── upper_arm.STL
+│   ├── wrist.blend
+│   ├── wrist.dae
+│   ├── wrist.SLDPRT
+│   ├── wrist.STEP
+│   └── wrist.STL
+├── package.xml
+├── rviz
+│   ├── check_urdf.rviz
+│   └── mogi_arm.rviz
+├── urdf
+│   ├── inertia_calculator.xlsx
+│   ├── materials.xacro
+│   └── transmission.xacro
+└── worlds
+    └── world.world
 ```
 
 # Gazebo világ
 
-A fejezetben egy Gazebo világot fogunk használni, ami két asztalból és néhány megfogható testből áll:
+A fejezetben egy új Gazebo világot fogunk használni, ami két asztalból és néhány megfogható testből áll:
 ![alt text][image1]
 
 A szimulációt el tudjuk indítani a következő launch fájllal:
