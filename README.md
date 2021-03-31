@@ -48,7 +48,7 @@
 
 # Kezdőcsomag
 
-A kiindulási csomag tartalmazza a Gazebo világot a launchfájlokat és az RViz konfigurációját, minden mást mi fogunk felépíteni közösen!
+A kiindulási csomag tartalmazza a Gazebo világot a launch fájlokat és az RViz konfigurációját, minden mást mi fogunk felépíteni közösen!
 
 A kezdőprojekt letöltése:
 ```console
@@ -459,7 +459,7 @@ Majd ezek után a jobb és bal ujjakat:
   </gazebo>
 ```
 
-Vegyük észre, hogy az ujjaknak megváltoztatjuk a mechanikai tulajdonságait, többek között a surlódását, ami ahhoz kell, hogy fogni tudjunk majd a gripperrel.
+Vegyük észre, hogy az ujjaknak megváltoztatjuk a mechanikai tulajdonságait, többek között a súrlódását, ami ahhoz kell, hogy fogni tudjunk majd a gripperrel.
 
 ![alt text][image11]
 
@@ -585,7 +585,7 @@ Fizikai szimulációban a gripperrel történő megfogás szimulációja egy nag
 Mind a két módszerre nézünk példát, először kezdjük a nehezebb úttal!
 
 ## Fizikai szimulációval
-A fizikai szimulációval való fogás azért a nehezebb út, mert position joint interface-eket használunk az egyes csuklókban. Emlékzetetőül, így adtuk meg a jointokat a `transmission.xacro` fájlban:
+A fizikai szimulációval való fogás azért a nehezebb út, mert position joint interface-eket használunk az egyes csuklókban. Emlékeztetőül, így adtuk meg a jointokat a `transmission.xacro` fájlban:
 
 ```xml
 <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
@@ -597,7 +597,7 @@ A position joint interface miatt látjuk a Gazebo figyelmeztetését:
 ```console
 [ERROR] [1617090695.832931300]: No p gain specified for pid.
 ```
-Abban az esetben ugyanis, ha nem adjuk meg a szabályozó paramétereket, a Gazebo egy úgy nevezett *kinematic* modellként kezeli a robotunkat, nem működik rá fizikai szimuláció, kizárólag a transzformációk mozgatják. Ebben az esetben a fizikai motor nem tudja kiszámolni a csuklókban ébredő erőket és nyomatékokat, emiatt a fogás sem fog működni, ahol a surlódás segítségével maradna a megfogóban a megfogott alkatrész.
+Abban az esetben ugyanis, ha nem adjuk meg a szabályozó paramétereket, a Gazebo egy úgy nevezett *kinematic* modellként kezeli a robotunkat, nem működik rá fizikai szimuláció, kizárólag a transzformációk mozgatják. Ebben az esetben a fizikai motor nem tudja kiszámolni a csuklókban ébredő erőket és nyomatékokat, emiatt a fogás sem fog működni, ahol a súrlódás segítségével maradna a megfogóban a megfogott alkatrész.
 
 Ezt könnyedén kipróbálhatjuk, ha elindítjuk a szimulációt, és megpróbáljuk megfogni az egyik objektumot:
 ![alt text][image20]
@@ -631,9 +631,9 @@ Ha sikerült elfogadható PID szabályozót hangolnunk, akkor ki is tudjuk prób
 Láthatjuk, hogy sikerült a fizikai szimuláció és a súrlódás segítségével megemelnünk a piros hasábot, ez hatalmas eredmény a saját részünkről és a fizikai motor részéről is!
 
 ## Tárgy rögzítésével
-A könnyebik út az, ha maradunk a robotunk kinematikai szimulációjánál, nem hangolunk PID szabályozót, és helyette fogás esetén létrehozunk egy fix linket a megfogó és a megfogandó tárgy között. Nem szabad ezt a *könnyebik* utat lebecsülni azonban, hiszen valójában a szimulált PID szabályozóink és a fizikai szimuláció hangolgatásából nem sok eredményt tudunk visszavezetni a valódi robotkarunk esetére.
+A könnyebbik út az, ha maradunk a robotunk kinematikai szimulációjánál, nem hangolunk PID szabályozót, és helyette fogás esetén létrehozunk egy fix linket a megfogó és a megfogandó tárgy között. Nem szabad ezt a *könnyebbik* utat lebecsülni azonban, hiszen valójában a szimulált PID szabályozóink és a fizikai szimuláció hangolgatásából nem sok eredményt tudunk visszavezetni a valódi robotkarunk esetére.
 
-Ez a könnyebik út viszont némi programozással jár, illetve szükségünk lesz egy olyan csomagra, amit forrásból kell fordítanunk:
+Ez a könnyebbik út viszont némi programozással jár, illetve szükségünk lesz egy olyan csomagra, amit forrásból kell fordítanunk:
 [https://github.com/MOGI-ROS/gazebo_ros_link_attacher](https://github.com/MOGI-ROS/gazebo_ros_link_attacher)
 
 Ha sikerült lefordítanunk a csomagot, akkor ezt a plugin-t még el kell helyeznünk a Gazebo világunkban is, mondjuk valahol a fájl végén a </world> tag előtt:
@@ -661,7 +661,7 @@ david@DavidsLenovoX1:~/bme_catkin_ws$ rosservice list
 ...
 ```
 
-Tehát a modell és link nevek alapján paranccsorból is hívhatnánk ezt a ROS service-t a következő formában:
+Tehát a modell és link nevek alapján parancssorból is hívhatnánk ezt a ROS service-t a következő formában:
 ```bash
 rosservice call /link_attacher_node/attach "model_name_1: 'cube1'
     link_name_1: 'link'
@@ -764,7 +764,7 @@ A Gazebo termináljában ezt látjuk:
 ```
 ![alt text][image25]
 
-Természetesen az `attach.py` és a `detach.py` nem foglalkozik azza, hogy hogy állítottuk be a kart, tehát attacholhatjuk a piros hasábot akkor is, ha a gripper a közelében sem tartózkodik. Természetesen ez nem túl elegáns megoldás:
+Természetesen az `attach.py` és a `detach.py` nem foglalkozik azzal, hogy hogy állítottuk be a kart, tehát attach-olhatjuk a piros hasábot akkor is, ha a gripper a közelében sem tartózkodik. Természetesen ez nem túl elegáns megoldás:
 ![alt text][image26]
 
 ### Collsion érzékelés
@@ -1115,7 +1115,7 @@ Ehhez az asztali kamera pluginjét változtassuk meg a következőre:
 # Robotkar mozgatása ROS node-dal
 Eddig a kar joint-jait az `rqt_joint_trajectory_controller` segítségével mozgattuk, de nézzük meg hogyan mozgathatnánk ezt a saját ROS node-unkból!
 
-Ehhez először nézzük meg alaposabban az `rqt_joint_trajectory_controller`-t! Indítsuk el a szimulációt és az `rqt_joint_trajectory_controller`-t is, és nézzuk meg a ROS node-ok listáját:
+Ehhez először nézzük meg alaposabban az `rqt_joint_trajectory_controller`-t! Indítsuk el a szimulációt és az `rqt_joint_trajectory_controller`-t is, és nézzük meg a ROS node-ok listáját:
 
 ```console
 david@DavidsLenovoX1:~/bme_catkin_ws$ rosnode list
@@ -1199,7 +1199,7 @@ point.positions = [-0.45, 0.72, 1.84, -1.0, 0.3, 0.3]
 ![alt text][image37]
 
 # Inverz kinematika
-Gyakorlatban azonban nem igazán kényelmes a jointok szögére hivatkozni a kar mozgatásakor. Arra, hogy a robotkarunk megfogóját (TCP) a kívánt pozícióba juttassuk meg kell oldanunk a robotkarunk inverz kinematikai problémáját. Szerencsére egy nagyon egyszerű geometriával rendelkező robotkart építettünk, így az inverz kinematika megoldását egyszerűen, héhány szögfüggvény segítségével kiszámíthatjuk!
+Gyakorlatban azonban nem igazán kényelmes a jointok szögére hivatkozni a kar mozgatásakor. Arra, hogy a robotkarunk megfogóját (TCP) a kívánt pozícióba juttassuk meg kell oldanunk a robotkarunk inverz kinematikai problémáját. Szerencsére egy nagyon egyszerű geometriával rendelkező robotkart építettünk, így az inverz kinematika megoldását egyszerűen, néhány szögfüggvény segítségével kiszámíthatjuk!
 
 ![alt text][image40]
 
@@ -1213,7 +1213,7 @@ Ahol a `coords` egy olyan lista, ami a TCP kívánt koordinátáit tartalmazzák
 
 ![alt text][image39]
 
-Az inverz kinematikai megoldó függvényünknek a gripperünk szöge egy paraméter, ami nem a `wrist`-hez képesti szöget jelenti, hanem a robot álló talpához rögzített koordinátarendszerhez képest. Ennek megfelelően tehát a `0 rad` gripper szög mindig a vízszintes, a `pi/2 rad` pedig mindig a lefelé néző függeleges grippert jelenti. Mivel a 4. csukló (`j3`) szögét ez alapján határozzuk meg, az inverz kinematikai problémát már csak 2 csuklóra (`j1` és `j2`) kell megoldanunk.
+Az inverz kinematikai megoldó függvényünknek a gripperünk szöge egy paraméter, ami nem a `wrist`-hez képesti szöget jelenti, hanem a robot álló talpához rögzített koordinátarendszerhez képest. Ennek megfelelően tehát a `0 rad` gripper szög mindig a vízszintes, a `pi/2 rad` pedig mindig a lefelé néző függőleges grippert jelenti. Mivel a 4. csukló (`j3`) szögét ez alapján határozzuk meg, az inverz kinematikai problémát már csak 2 csuklóra (`j1` és `j2`) kell megoldanunk.
 
 Ehhez újraszámoljuk a koordinátákat, az egyszerűség kedvéért a `wrist` csuklóra.
 
