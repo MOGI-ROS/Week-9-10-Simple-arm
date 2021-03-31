@@ -50,11 +50,11 @@
 1. [Kezdőcsomag](#Kezdőcsomag)  
 2. [Gazebo világ](#Gazebo-világ)
 3. [Robot kar építése URDF-fel](#Robot-kar-építése-URDF-fel)  
-3.1. [base_link](#base_link)  
-3.2. [shoulder linkek](#shoulder-linkek)  
-3.3. [könyök](#könyök)
-3.4. [csukló](#csukló)
-3.5. [gripper](#gripper)
+3.1. [alap](#alap)  
+3.2. [váll jointok](#váll-jointok)  
+3.3. [könyök](#könyök)  
+3.4. [csukló](#csukló)  
+3.5. [megfogó](#megfogó)  
 4. [Transmission és Controller](#Transmission-és-Controller)
 5. [3D modell](#3D-modell)
 6. [Kezdeti állapot](#Kezdeti-állapot)
@@ -148,7 +148,7 @@ Vegyük észre, hogy van egy apró változás a `world.launch` fájlban, ugyanis
 
 ![alt text][image10]
 
-## base_link
+## alap
 
 Hozzuk létre a robotunk első linkjét, ami a robotkar alapja lesz. A robotkar felépítése során hengerekkel fogunk dolgozni, és ennek megfelelően megpróbálunk reális értékeket választani a tömeg és a tehetetlenségi nyomaték mátrixának. Ehhez használhatjuk a mellékelt `inertia_calculator.xlsx` segítségképpen.
 
@@ -208,7 +208,7 @@ A `base_link`-ünk egy egyszerű lapos korong, de ennek ellenére megbizonyosodh
 Illetve megnézhetjük a `spawn_robot.launch` fájlunkat is működés közben:
 ![alt text][image3]
 
-## shoulder linkek
+## váll jointok
 
 A robot válla két jointból fog állni, az egyik a `base_link` körüli forgatást, a másik a "felkar" mozgatását csinálja. Adjuk hozzá a két új linket és jointot az urdf fájlunkhoz:
 
@@ -394,7 +394,7 @@ Láthatjuk, hogy a Gazebo szimulációban nem tudjuk olyan egyszerűen mozgatni 
 
 ![alt text][image9]
 
-## gripper
+## megfogó
 
 Először adjuk hozzá a gripperünk alapját:
 
