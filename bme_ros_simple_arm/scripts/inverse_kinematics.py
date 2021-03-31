@@ -64,8 +64,6 @@ def inverse_kinematics(coords, gripper_status, gripper_angle = 0):
 
     return angles
 
-
-
 rospy.init_node('send_joint_angles_ik')
 
 pub = rospy.Publisher('/arm_controller/command', JointTrajectory, queue_size=1)
