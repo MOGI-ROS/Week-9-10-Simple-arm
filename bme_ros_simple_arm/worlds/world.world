@@ -880,7 +880,5 @@
       <allow_auto_disable>1</allow_auto_disable>
       <pose frame=''>0.749999 -0.25 1.065 -2e-06 -1.2e-05 0.000183</pose>
     </model>
-    <!-- A gazebo links attacher -->
-    <plugin name="ros_link_attacher_plugin" filename="libgazebo_ros_link_attacher.so"/>
   </world>
 </sdf>
