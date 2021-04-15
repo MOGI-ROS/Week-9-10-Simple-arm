@@ -547,6 +547,18 @@ Először is adjuk hozzá a `transmission.xacro` és a `mogi_arm.gazebo` fájlok
   <xacro:include filename="$(find bme_ros_simple_arm)/urdf/mogi_arm.gazebo" />
 ```
 
+Mivel a `mogi_arm.gazebo` fájl még nem létezik, hozzuk ezt is létre az urdf mappán belül:
+```xml
+<?xml version="1.0"?>
+<robot>
+
+  <gazebo>
+    <plugin name="ros_control" filename="libgazebo_ros_control.so">
+    </plugin>
+  </gazebo>
+</robot>
+```
+
 Ha ezután elindítjuk a `spawn_robot.launch` fájlt, a következő üzeneteket látjuk majd a konzolban:
 ```console
 [ INFO] [1617044019.576815200]: Loading gazebo_ros_control plugin
