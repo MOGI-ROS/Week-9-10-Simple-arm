@@ -24,10 +24,16 @@
   <!-- Send robot states to tf -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen"/>
 
-  <!-- Send joint values-->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-    <param name="use_gui" value="false"/>
-  </node>
+  <!-- Load PID parameters -->
+  <!--rosparam file="$(find bme_ros_simple_arm)/controller/pid.yaml"/-->
+
+  <!-- Joint_state_controller -->
+  <rosparam file="$(find bme_ros_simple_arm)/controller/joint_state_controller.yaml" command="load"/>
+  <node name="joint_state_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_controller" respawn="false" output="screen"/>
+
+  <!-- Start this controller -->
+  <rosparam file="$(find bme_ros_simple_arm)/controller/arm_controller.yaml" command="load"/>
+  <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller" respawn="false" output="screen"/>
 
   <!-- Spawn mogi_arm -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
