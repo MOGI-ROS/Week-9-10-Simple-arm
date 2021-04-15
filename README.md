@@ -878,7 +878,7 @@ def get_contacts (msg):
 
 
 
-rospy.init_node('gps_waypoint_follower')
+rospy.init_node('collision_detector')
 
 sub_contacts = rospy.Subscriber ('/contact_vals', ContactsState, get_contacts)
 
