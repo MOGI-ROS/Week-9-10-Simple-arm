@@ -399,6 +399,13 @@ Láthatjuk, hogy a Gazebo szimulációban nem tudjuk olyan egyszerűen mozgatni 
 Először adjuk hozzá a gripperünk alapját:
 
 ```xml
+  <!-- Gripper base joint -->
+  <joint name="gripper_base_joint" type="fixed">
+    <parent link="wrist_link"/>
+    <child link="gripper_base"/>
+    <origin xyz="0.0 0 0.105" rpy="0.0 0 0"/> 
+  </joint>
+
   <!-- Gripper base link -->
   <link name="gripper_base">
     <inertial>
