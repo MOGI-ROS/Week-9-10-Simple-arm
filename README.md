@@ -40,6 +40,9 @@
 [image38]: ./assets/ik_1.png "IK"
 [image39]: ./assets/ik_2.png "IK"
 [image40]: ./assets/ik_3.png "IK"
+[image41]: ./assets/rqt_3.png "rqt"
+[image42]: ./assets/rviz_moveit_1.png "moveit"
+[image43]: ./assets/rviz_moveit_2.png "moveit"
 
 # 9. - 10. hét - robotkarok
 
@@ -1462,10 +1465,112 @@ joint_angles = inverse_kinematics([0.5, 0, 0.05], "open", 0)
 joint_angles = inverse_kinematics([0.4, 0, 0.15], "open", 0)
 ```
 
+# MoveIt
+
+A MoveIt egy ROS-on belül *state of the art* manipulációs szoftvercsomag, ami rengeteg funkcióval rendelkezik. Aktív fejlesztés alatt áll, érdemes átnézni a [MoveIt hivatalos oldalát](https://moveit.ros.org/).
+
+Ezen kívül sok hasznos [tutorial](https://ros-planning.github.io/moveit_tutorials/) is van hozzá, aminek a segítségével egy Franka Emika Panda robot szimulációján keresztül ismerjük meg a MoveIt funkcióit.
+
+Ma már elég sok [támogatott robot](https://moveit.ros.org/robots/) van a MoveIt listáján, ezek közül 2-vel mi is részletesen foglalkozunk majd.
 
 
+## Controller módosítás
+
+Mielőtt belevágnánk a MoveIt használatába, módosítsunk egy kicsit a controller-ünkön, szedjük szét egy `arm_controller`-re és egy `gripper_controller`-re. Eddig az egyszerűség kedvéért tartottuk együtt, így azonban a MoveIt nem fogja tudni értelmezni a kinematikai láncát.
+
+```yaml
+arm_controller:
+  type: position_controllers/JointTrajectoryController
+  joints:
+     - shoulder_pan_joint
+     - shoulder_lift_joint
+     - elbow_joint
+     - wrist_joint
+  constraints:
+      goal_time: 0.6
+      stopped_velocity_tolerance: 0.05
+      shoulder_pan_joint: {trajectory: 0.1, goal: 0.1}
+      shoulder_lift_joint: {trajectory: 0.1, goal: 0.1}
+      elbow_joint: {trajectory: 0.1, goal: 0.1}
+      wrist_joint: {trajectory: 0.1, goal: 0.1}
+  stop_trajectory_duration: 0.5
+  state_publish_rate:  25
+  action_monitor_rate: 10
+
+gripper_controller:
+  type: position_controllers/JointTrajectoryController
+  joints:
+     - left_finger_joint
+     - right_finger_joint
+  constraints:
+      goal_time: 0.6
+      stopped_velocity_tolerance: 0.05
+      left_finger_joint: {trajectory: 0.1, goal: 0.1}
+      right_finger_joint: {trajectory: 0.1, goal: 0.1}
+  stop_trajectory_duration: 0.5
+  state_publish_rate:  25
+  action_monitor_rate: 10
+```
+
+Ezután módosítsuk a `spawn_robot.launch` fájlunkat is, hogy az új **`gripper_controller`**-t is betöltse!
+
+```xml
+...
+<node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller gripper_controller" respawn="false" output="screen"/>
+...
+```
+
+Próbáljuk is ki:
+```console
+roslaunch bme_ros_simple_arm spawn_robot.launch
+```
+
+Valamint indítsunk egy `rqt_joint_trajectory_controller`-t is, ezután két külön kontrollert látuk majd.  
+![alt text][image41]
 
 
+## MoveIt! setup assistant
+A MoveIt rendelkezik egy beállítás varázslóval, ami segít nekünk egy új robot beállításában. A varázslót a következő paranccsal tudjuk elindítani:
+```console
+roslaunch moveit_setup_assistant setup_assistant.launch
+```
+
+<a href="https://youtu.be/lnzsSyjx2eI"><img height="400" src="./assets/moveit.gif"></a> 
+
+Ha jól állítottunk be mindent, és a robotkarunk is megfelelően volt előkészítve, akkor nincs szükség semmilyen kézi módosításra az így generált MoveIt csomagban! Mivel a varázsló létrehozott egy új ROS csomagot, fordítsuk újra a catkin workspace-t és futtassunk egy `source devel/setup.bash` parancsot is.
+
+Indítsuk el a szimulációt, ahogy eddig:
+```console
+roslaunch bme_ros_simple_arm spawn_robot.launch
+```
+
+És indítsuk el mellé a MoveIt-ot is a frissen generált új ROS csomagunk segítségével:
+```console
+roslaunch bme_ros_simple_arm_moveit_config move_group.launch
+```
+
+Ha bármikor módosítani szeretnénk a meglévő MoveIt beállításainkat, akkor a következő módon tehetjük meg:
+```console
+roslaunch bme_ros_simple_arm_moveit_config setup_assistant.launch
+```
+
+Adjuk hozzá az RViz-hez a `MotionPlanning` megjelenítőt, és máris használhatjuk a MoveIt-ot, ami az interaktív marker mozgatása alapján azonnal számolja a robotunk inverz kinematikája alapján a csuklók új szögét.
+![alt text][image42]
+
+A plan és execution gombok segítségével pedig megtervezhetjük a kar pályáját és végre is hajthatjuk a mozgást a szimulációban.
+![alt text][image43]
+
+Sajnos a karunk 4 szabadsági foka miatt csak síkban tudunk tervezni, mert a KDL inverz kinematikai plugin nem támogatja a 6-nál kisebb szabadsági fokú robotokat. Egy megoldás lehet, ha módosítjuk a `kinematics.yaml` fájlunkat a `bme_ros_simple_arm_moveit_config`-on belül a `config` mappában:
+
+```yaml
+arm:
+  kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.005
+  position_only_ik: True
+```
+
+Így azonban nem tudjuk állítani a gripper szögét. Másik lehetőség egy [IKFast plugin generálása](https://ros-planning.github.io/moveit_tutorials/doc/ikfast/ikfast_tutorial.html) az urdf fájl alapján, ez azonban nem része a leckének.
 
 
 
