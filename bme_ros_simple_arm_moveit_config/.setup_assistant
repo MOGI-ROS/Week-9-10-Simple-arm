@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: bme_ros_simple_arm
+    relative_path: urdf/mogi_arm.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/mogi_arm.srdf
+  CONFIG:
+    author_name: David Dudas
+    author_email: david.dudas@mogi.bme.hu
+    generated_timestamp: 1618603768
