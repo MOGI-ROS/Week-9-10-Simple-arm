@@ -576,10 +576,26 @@ Ha ezután elindítjuk a `spawn_robot.launch` fájlt, a következő üzeneteket 
 [ INFO] [1617044019.772403000]: Loaded gazebo_ros_control.
 ```
 
+Ha esetleg olyan hibát látnánk, hogy:
+```console
+[ERROR] [1618919992.645435636]: Could not load controller 'arm_controller' because controller type 'position_controllers/JointTrajectoryController' does not exist.
+[ERROR] [1618919992.646388360]: Use 'rosservice call controller_manager/list_controller_types' to get the available types
+```
+
+Ebben az esetben telepíteni kell a `joint trajectory controller`-t:
+```console
+sudo apt install ros-$(rosversion -d)-joint-trajectory-controller
+```
+
 Ez azt jelenti, hogy a szimulált hardware interfészeink működnek, a ROS control csomagja megtalálta őket, de ezzel még nincs vége a feladatnak, hiszen továbbra sem tudjuk mozgatni a kart. A mozgatáshoz az `rqt_joint_trajectory_controller`-ét fogjuk használni, amit így tudunk elindítani:
 
 ```console
 rosrun rqt_joint_trajectory_controller rqt_joint_trajectory_controller
+```
+
+Ha nem lenne telepítve a `joint trajectory controller` telepítése után automatikusan, akkor így tudjátok feltenni:
+```console
+sudo apt install ros-$(rosversion -d)-rqt-joint-trajectory-controller
 ```
 
 ![alt text][image13]
@@ -1527,6 +1543,11 @@ roslaunch bme_ros_simple_arm spawn_robot.launch
 
 Valamint indítsunk egy `rqt_joint_trajectory_controller`-t is, ezután két külön kontrollert látuk majd.  
 ![alt text][image41]
+
+A MoveIt egy sok csomagból álló szoftvercsomag, de szerencsére a következő paranccsal minden szükséges komponensét telepíteni tudjuk:
+```console
+sudo apt install ros-$(rosversion -d)-moveit
+```
 
 
 ## MoveIt! setup assistant
