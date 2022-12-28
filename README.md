@@ -772,7 +772,7 @@ rosservice call /link_attacher_node/attach "model_name_1: 'cube1'
 
 De ehelyett csinálunk egy python scriptet inkább. Hozzuk létre az `attach.py` fájlt a `scripts` mappában:
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
@@ -799,7 +799,7 @@ if __name__ == '__main__':
 
 Ennek megfelelően csináljuk meg a `detach.py` fájlt is:
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from gazebo_ros_link_attacher.srv import Attach, AttachRequest, AttachResponse
@@ -897,7 +897,7 @@ A `states` tömb üres, ha nincs ütközés, most mozgassuk a kart a piros hasá
 Készítsünk egy saját ROS node-ot, ami a bal ujj ütközéseit vizsgálja, és kiírja nekünk, hogy mivel érzékel ütközést:
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 
@@ -1257,7 +1257,7 @@ Láthatjuk, hogy ebben a topicban egyrészt felsoroljuk a controllerhez tartozó
 
 Készítsük el a `send_joint_angles.py` node-unkat:
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 
@@ -1277,7 +1277,6 @@ rate = rospy.Rate(10)
 trajectory_command = JointTrajectory()
 
 trajectory_command.joint_names = joint_names
-trajectory_command.header.stamp = rospy.Time.now()
 
 point = JointTrajectoryPoint()
 #['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
@@ -1288,6 +1287,7 @@ point.time_from_start = rospy.rostime.Duration(1,0)
 trajectory_command.points = [point]
 
 while not rospy.is_shutdown():
+    trajectory_command.header.stamp = rospy.Time.now()
     pub.publish(trajectory_command)
     rate.sleep()
 ```
@@ -1407,7 +1407,7 @@ Még egy 4 szabadságifokú robotkar esetén is egészen hosszúak lesznek a ké
 Készítsük el a `forward_kinematics.py` fájlt, amiben le tudjuk tesztelni a fenti két függvényünket!
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import math
 ```
@@ -1432,7 +1432,7 @@ print(forward_kinematics(joint_angles))
 Ha elégedettek vagyunk az eredménnyel, készítsünk egy `inverse_kinematics.py` ROS node-ot, ami nagyon hasonlít majd a `send_joint_angles.py` node-unkhoz!
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import math
