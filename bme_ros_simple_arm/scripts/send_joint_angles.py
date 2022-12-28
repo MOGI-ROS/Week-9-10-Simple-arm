@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 
@@ -16,9 +16,7 @@ rospy.loginfo("Joint names: %s" % joint_names)
 rate = rospy.Rate(10)
 
 trajectory_command = JointTrajectory()
-
 trajectory_command.joint_names = joint_names
-trajectory_command.header.stamp = rospy.Time.now()
 
 point = JointTrajectoryPoint()
 #['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
@@ -30,5 +28,6 @@ point.time_from_start = rospy.rostime.Duration(1,0)
 trajectory_command.points = [point]
 
 while not rospy.is_shutdown():
+    trajectory_command.header.stamp = rospy.Time.now()
     pub.publish(trajectory_command)
     rate.sleep()
