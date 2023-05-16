@@ -43,6 +43,7 @@
 [image41]: ./assets/rqt_3.png "rqt"
 [image42]: ./assets/rviz_moveit_1.png "moveit"
 [image43]: ./assets/rviz_moveit_2.png "moveit"
+[image44]: ./assets/moveit_34.png "moveit"
 
 # 9. - 10. hét - robotkarok
 
@@ -1592,6 +1593,9 @@ arm:
 ```
 
 Így azonban nem tudjuk állítani a gripper szögét. Másik lehetőség egy [IKFast plugin generálása](https://ros-planning.github.io/moveit_tutorials/doc/ikfast/ikfast_tutorial.html) az urdf fájl alapján, ez azonban nem része a leckének.
+
+> Egy másik lehetséges megoldás 2 plusz virtuális joint hozzáadása (egy yaw és egy roll axis a gripperen), amivel már 6 szabadsági fokú lesz a robotkarunk, és így a KDL-t is használhatjuk. Ez sok kényelmetlenséggel jár, mert nem elég a robotunk URDF fájljában két hamis revolut jointot definiálnunk, a controllerhez is hozzá kell adjuk és a `transmission.xacro` fájlhoz is, hogy létezzen HW interfész a controllerhez. Ezen felül újra kell generálnunk a MoveIt Setup Assistant segítségével a MoveIt konfigurációs fájljainkat. Ezeket a módosításokat megtaláljátok git-ben az óra anyagának repojában a `fake-6-axis` branchen.
+![alt text][image44]
 
 
 
