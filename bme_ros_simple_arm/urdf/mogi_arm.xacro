@@ -334,7 +334,7 @@
 
   <!-- Virtual roll joint -->
   <joint name="virtual_roll_joint" type="revolute">
-    <limit lower="-1.57" upper="1.57" effort="54.0" velocity="3.14"/>
+    <limit lower="-3.1415" upper="3.1415" effort="54.0" velocity="3.14"/>
     <parent link="wrist_link"/>
     <child link="virtual_roll_link"/>
     <axis xyz="0 0 1"/>
@@ -367,7 +367,7 @@
 
   <!-- Virtual yaw joint -->
   <joint name="virtual_yaw_joint" type="revolute">
-    <limit lower="-1.57" upper="1.57" effort="54.0" velocity="3.14"/>
+    <limit lower="-3.1415" upper="3.1415" effort="54.0" velocity="3.14"/>
     <parent link="virtual_roll_link"/>
     <child link="virtual_yaw_link"/>
     <axis xyz="1 0 0"/>
