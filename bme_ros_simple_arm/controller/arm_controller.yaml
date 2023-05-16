@@ -5,6 +5,8 @@ arm_controller:
      - shoulder_lift_joint
      - elbow_joint
      - wrist_joint
+     - virtual_roll_joint
+     - virtual_yaw_joint
   constraints:
       goal_time: 0.6
       stopped_velocity_tolerance: 0.05
@@ -12,6 +14,8 @@ arm_controller:
       shoulder_lift_joint: {trajectory: 0.1, goal: 0.1}
       elbow_joint: {trajectory: 0.1, goal: 0.1}
       wrist_joint: {trajectory: 0.1, goal: 0.1}
+      virtual_roll_joint: {trajectory: 0.1, goal: 0.1}
+      virtual_yaw_joint: {trajectory: 0.1, goal: 0.1}
   stop_trajectory_duration: 0.5
   state_publish_rate:  25
   action_monitor_rate: 10

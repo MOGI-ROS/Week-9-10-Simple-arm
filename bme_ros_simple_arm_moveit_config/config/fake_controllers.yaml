@@ -5,6 +5,8 @@ controller_list:
       - shoulder_lift_joint
       - elbow_joint
       - wrist_joint
+      - virtual_roll_joint
+      - virtual_yaw_joint
   - name: fake_gripper_controller
     joints:
       - left_finger_joint
