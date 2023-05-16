@@ -8,4 +8,4 @@ moveit_setup_assistant_config:
   CONFIG:
     author_name: David Dudas
     author_email: david.dudas@mogi.bme.hu
-    generated_timestamp: 1618603768
+    generated_timestamp: 1684256963
