@@ -41,7 +41,7 @@
     </visual>
   </link>
 
-  <!-- STEP 4 - Shoulder pan joint -->
+  <!-- STEP 4 - Shoulder -->
   <joint name="shoulder_pan_joint" type="revolute">
     <limit lower="-3.14" upper="3.14" effort="330.0" velocity="3.14"/>
     <parent link="base_link"/>
@@ -113,7 +113,7 @@
     </visual>
   </link>
 
-  <!-- STEP 6 - Elbow joint -->
+  <!-- STEP 6 - Elbow -->
   <joint name="elbow_joint" type="revolute">
     <limit lower="-2.3562" upper="2.3562" effort="150.0" velocity="3.14"/>
     <parent link="upper_arm_link"/>
@@ -149,7 +149,7 @@
     </visual>
   </link>
 
-  <!-- STEP 7 - Wrist joint -->
+  <!-- STEP 7 - Wrist -->
   <joint name="wrist_joint" type="revolute">
     <limit lower="-2.3562" upper="2.3562" effort="54.0" velocity="3.14"/>
     <parent link="forearm_link"/>
@@ -185,7 +185,7 @@
     </visual>
   </link>
 
-  <!-- STEP 8 - Gripper base joint -->
+  <!-- STEP 8 - Gripper -->
   <joint name="gripper_base_joint" type="fixed">
     <parent link="wrist_link"/>
     <child link="gripper_base"/>
@@ -305,6 +305,7 @@
     <minDepth>0.002</minDepth>
   </gazebo>
 
+  <!-- STEP 9 - ROS2 control -->
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
       <plugin>gz_ros2_control/GazeboSimSystem</plugin>
@@ -376,5 +377,31 @@
       <state_interface name="effort"/>
     </joint>
   </ros2_control>
+
+  <!-- STEP 10 - End effector -->
+  <joint name="end_effector_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
+    <parent link="wrist_link"/>
+    <child link="end_effector_link"/>
+  </joint>
+
+  <!-- End effector link -->
+  <link name="end_effector_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+      </geometry>
+      <material name="red"/>
+     </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0e-03" />
+      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
+               iyy="1.0e-03" iyz="0.0"
+               izz="1.0e-03" />
+    </inertial>
+  </link>
 
 </robot>
