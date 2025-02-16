@@ -72,6 +72,14 @@ def generate_launch_description():
         'gz_bridge.yaml'
     )
 
+    robot_controllers = PathJoinSubstitution(
+        [
+            get_package_share_directory('bme_ros2_simple_arm'),
+            'config',
+            'controller_position.yaml',
+        ]
+    )
+
     world_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_bme_ros2_simple_arm, 'launch', 'world.launch.py'),
@@ -162,6 +170,22 @@ def generate_launch_description():
         ]
     )
 
+    joint_state_broadcaster_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['joint_state_broadcaster'],
+    )
+
+    joint_trajectory_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=[
+            'joint_trajectory_controller',
+            '--param-file',
+            robot_controllers,
+            ],
+    )
+
     launchDescriptionObject = LaunchDescription()
 
     launchDescriptionObject.add_action(rviz_launch_arg)
@@ -180,5 +204,7 @@ def generate_launch_description():
     #launchDescriptionObject.add_action(gz_image_bridge_node)
     #launchDescriptionObject.add_action(relay_camera_info_node)
     launchDescriptionObject.add_action(robot_state_publisher_node)
+    launchDescriptionObject.add_action(joint_state_broadcaster_spawner)
+    launchDescriptionObject.add_action(joint_trajectory_controller_spawner)
 
     return launchDescriptionObject
