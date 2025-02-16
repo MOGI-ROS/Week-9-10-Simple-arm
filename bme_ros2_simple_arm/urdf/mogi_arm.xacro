@@ -69,7 +69,8 @@
     </collision>
     <visual>
       <geometry>
-        <cylinder radius="0.1" length="0.05"/>
+        <!-- <cylinder radius="0.1" length="0.05"/> -->
+        <mesh filename = "package://bme_ros2_simple_arm/meshes/shoulder.dae"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
@@ -104,7 +105,8 @@
     </collision>
     <visual>
       <geometry>
-        <cylinder radius="0.05" length="0.2"/>
+        <!-- <cylinder radius="0.05" length="0.2"/> -->
+        <mesh filename = "package://bme_ros2_simple_arm/meshes/upper_arm.dae"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
@@ -139,7 +141,8 @@
     </collision>
     <visual>
       <geometry>
-        <cylinder radius="0.025" length="0.25"/>
+        <!-- <cylinder radius="0.025" length="0.25"/> -->
+        <mesh filename = "package://bme_ros2_simple_arm/meshes/forearm.dae"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.125" rpy="0.0 0.0 0.0"/>
@@ -174,7 +177,8 @@
     </collision>
     <visual>
       <geometry>
-        <cylinder radius="0.02" length="0.1"/>
+        <!-- <cylinder radius="0.02" length="0.1"/> -->
+        <mesh filename = "package://bme_ros2_simple_arm/meshes/wrist.dae"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0"/>
