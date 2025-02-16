@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<robot name="mogi_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- STEP 3 - RViz colors -->
+  <xacro:include filename="$(find bme_ros2_navigation)/urdf/materials.xacro" />
+
+  <!-- STEP 1 - Global reference link -->
+  <link name="world"/>
+
+  <!-- STEP 2 - Arm base link -->
+  <joint name="fixed_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+
+  <link name="base_link">
+    <inertial>
+      <mass value="2"/>
+      <origin xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.0117" ixy="0.0" ixz="0.0" 
+               iyy="0.0117" iyz="0.0"
+               izz="0.0225"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <cylinder radius="0.15" length="0.05"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.15" length="0.05"/>
+      </geometry>
+      <material name="grey"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+</robot>
