@@ -180,7 +180,8 @@ def generate_launch_description():
         package='controller_manager',
         executable='spawner',
         arguments=[
-            'joint_trajectory_controller',
+            'arm_controller',
+            'gripper_controller',
             '--param-file',
             robot_controllers,
             ],
