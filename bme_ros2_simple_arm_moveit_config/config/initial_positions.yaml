@@ -1,0 +1,9 @@
+# Default initial positions for mogi_arm's ros2_control fake system
+
+initial_positions:
+  elbow_joint: 0
+  left_finger_joint: 0
+  right_finger_joint: 0
+  shoulder_lift_joint: 0
+  shoulder_pan_joint: 0
+  wrist_joint: 0
