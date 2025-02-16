@@ -111,4 +111,194 @@
     </visual>
   </link>
 
+  <!-- STEP 6 - Elbow joint -->
+  <joint name="elbow_joint" type="revolute">
+    <limit lower="-2.3562" upper="2.3562" effort="150.0" velocity="3.14"/>
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0.0 0.0 0.2" rpy="0.0 0.0 0.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Forearm link -->
+  <link name="forearm_link">
+    <inertial>
+      <mass value="0.2"/>
+      <origin xyz="0.0 0.0 0.125" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.0011" ixy="0.0" ixz="0.0"
+               iyy="0.0011" iyz="0.0"
+               izz="0.0004"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <cylinder radius="0.025" length="0.25"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.125" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.025" length="0.25"/>
+      </geometry>
+      <material name="orange"/>
+      <origin xyz="0.0 0.0 0.125" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+  <!-- STEP 7 - Wrist joint -->
+  <joint name="wrist_joint" type="revolute">
+    <limit lower="-2.3562" upper="2.3562" effort="54.0" velocity="3.14"/>
+    <parent link="forearm_link"/>
+    <child link="wrist_link"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0.0 0.0 0.25" rpy="0.0 0.0 0.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Wrist link -->
+  <link name="wrist_link">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.00009" ixy="0.0" ixz="0.0"
+               iyy="0.00009" iyz="0.0"
+               izz="0.00002"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <cylinder radius="0.02" length="0.1"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.02" length="0.1"/>
+      </geometry>
+      <material name="orange"/>
+      <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+  <!-- STEP 8 - Gripper base joint -->
+  <joint name="gripper_base_joint" type="fixed">
+    <parent link="wrist_link"/>
+    <child link="gripper_base"/>
+    <origin xyz="0.0 0 0.105" rpy="0.0 0 0"/> 
+  </joint>
+
+  <!-- Gripper base link -->
+  <link name="gripper_base">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.00009" ixy="0.0" ixz="0.0"
+               iyy="0.00009" iyz="0.0"
+               izz="0.00002"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <box size=".05 .1 .01"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <box size=".05 .1 .01"/>
+      </geometry>
+      <material name="grey"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+  <!-- Left finger joint -->
+  <joint name="left_finger_joint" type="prismatic">
+    <limit lower="0" upper="0.04" effort="100.0" velocity="4.0"/>
+    <parent link="gripper_base"/>
+    <child link="left_finger"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0.0 0.01 0.045" />
+  </joint>
+
+  <!-- Left finger link -->
+  <link name="left_finger">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.00009" ixy="0.0" ixz="0.0"
+               iyy="0.00009" iyz="0.0"
+               izz="0.00002"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <material name="blue"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+  <gazebo reference="left_finger">
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <mu1>15</mu1>
+    <mu2>15</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.002</minDepth>
+  </gazebo>
+
+  <!-- Right finger joint -->
+  <joint name="right_finger_joint" type="prismatic">
+    <limit lower="0" upper="0.04" effort="100.0" velocity="4.0"/>
+    <parent link="gripper_base"/>
+    <child link="right_finger"/>
+    <axis xyz="0 -1 0"/>
+    <origin xyz="0.0 -0.01 0.045" />
+  </joint>
+
+  <!-- Right finger link -->
+  <link name="right_finger">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <inertia ixx="0.00009" ixy="0.0" ixz="0.0"
+               iyy="0.00009" iyz="0.0"
+               izz="0.00002"
+      />
+    </inertial>
+    <collision>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </collision>
+    <visual>
+      <geometry>
+        <box size=".04 .01 .08"/>
+      </geometry>
+      <material name="blue"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </visual>
+  </link>
+
+  <gazebo reference="right_finger">
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <mu1>15</mu1>
+    <mu2>15</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.002</minDepth>
+  </gazebo>
+
 </robot>
