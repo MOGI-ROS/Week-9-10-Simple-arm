@@ -174,6 +174,9 @@ def generate_launch_description():
         package='controller_manager',
         executable='spawner',
         arguments=['joint_state_broadcaster'],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
     )
 
     joint_trajectory_controller_spawner = Node(
@@ -185,6 +188,9 @@ def generate_launch_description():
             '--param-file',
             robot_controllers,
             ],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
     )
 
     launchDescriptionObject = LaunchDescription()
