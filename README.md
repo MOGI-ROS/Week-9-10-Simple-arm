@@ -8,9 +8,9 @@
 [image6]: ./assets/elbow.png "Elbow"
 [image7]: ./assets/wrist.png "Wrist"
 [image8]: ./assets/gripper.png "Gripper"
-
-
-[image16]: ./assets/joint-states-1.png "Joint states"
+[image9]: ./assets/joint-states-1.png "Joint states"
+[image10]: ./assets/joint-trajectory-controller.png "Joint trajectory"
+[image11]: ./assets/joint-states-2.png "Joint states"
 
 # Week-9-10-Simple-arm
 
@@ -234,7 +234,7 @@ ros2 launch bme_ros2_navigation spawn_robot.launch.py
 
 ![alt text][image4]
 
-Joint state publisher opens a small GUI where we can adjust the angles of the two new shoulder joints, but this has clearly no impact on the simulation. We should always make sure that the `spawn_robot` launch file sends the joint states from the simulation in Gazebo and not from somewhere else - like the small GUI in this case. We'll handle this a bit later.
+Joint state publisher opens a small GUI where we can adjust the angles of the two new shoulder joints, but this has clearly no impact on the simulation. Let's take a look on `rqt_graph`, it's clear that the `joint_states` are not coming from the simulation. We'll handle this a bit later.
 
 ![alt text][image5]
 
@@ -472,7 +472,7 @@ ros2 launch bme_ros2_navigation spawn_robot.launch.py
 
 ## Joint state publishing
 
-As we noticed earlier, we can move the joint angles of the robotic arm in RViz using the `joint_state_publisher_gui` but this has no impact on the simulation. To move the arm inb the simulation first we have to turn off the `joint_state_publisher_gui` in the `spawn_robot.launch.py`, it means the small GUI won't open anymore using this launch file.
+As we noticed earlier, we can move the joint angles of the robotic arm in RViz using the `joint_state_publisher_gui` but this has no impact on the simulation. To move the arm in the simulation first we have to turn off the `joint_state_publisher_gui` in the `spawn_robot.launch.py`, it means the small GUI won't open anymore using this launch file.
 
 The next step is to forward `joint_states` from Gazebo to ROS, this we can set up in the config file of `gz_bridge` as we did previously with the mobile robots too:
 
@@ -491,7 +491,7 @@ And the last step is to add a `mogi_arm.gazebo` file in the urdf folder with a j
     <plugin
         filename="gz-sim-joint-state-publisher-system"
         name="gz::sim::systems::JointStatePublisher">
-        <topic>joint_states</topic> <!--from <ros><remapping> -->
+        <topic>joint_states</topic>
         <joint_name>shoulder_pan_joint</joint_name>
         <joint_name>shoulder_lift_joint</joint_name>
         <joint_name>elbow_joint</joint_name>
@@ -510,24 +510,226 @@ And of course, include it in the beginning of our URDF file:
   <xacro:include filename="$(find bme_ros2_simple_arm)/urdf/mogi_arm.gazebo" />
 ```
 
-Rebuild the workspace and try it:
+Rebuild the workspace and try it together with `rqt_graph`:
 ```bash
 ros2 launch bme_ros2_navigation spawn_robot.launch.py
 ```
 
-![alt text][image6]
+![alt text][image9]
+
+Now the `joint_states` are coming from the simulation but we stil ldon't have the tools to move the arm.
 
 # ROS Controller
 
+Joint angles are important, but this still doesn't mean that we simulate any actuators in these joints with Gazebo. And here comes the `ROS2 control` and it's controllers for every joints. Let's add it to our URDF file:
 
-After ROS control joint state gz bridge can be removed
+```xml
+  <!-- STEP 9 - ROS2 control -->
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+    <joint name="shoulder_pan_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="shoulder_lift_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="elbow_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="wrist_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="left_finger_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="right_finger_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+  </ros2_control>
+```
 
+We also have to add the `ROS2 control` to the `mogi_arm.gazebo` file:
+
+```xml
+  <gazebo>
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find bme_ros2_simple_arm)/config/controller_position.yaml</parameters>
+    </plugin>
+  </gazebo>
+```
+
+The controller needs a `yaml` file with it's parameters that is already part of the package:
+```yaml
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+arm_controller:
+  ros__parameters:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_joint
+      - left_finger_joint
+      - right_finger_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+```
+
+And finally we have to start the controller in our launch file.
+
+```python
+    joint_trajectory_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=[
+            'arm_controller',
+            '--param-file',
+            robot_controllers,
+            ],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
+    )
+```
+
+## Joint trajectory control
+
+If the controller is set up finally we can try it out. Start the simulation and in another terminal let's start the `joint_trajectory_controller`:
+
+```bash
+ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
+```
+
+This opens another small GUI that might look similar in the first glance to the previous `joint_state_publisher` GUI, but they are very different tools. The previous one was only suitable to tell fake joint angles to RViz without any real control. `joint_trajectory_controller` sends real motion commands the (real or simulated) controllers of the robotic arm.
+
+![alt text][image10]
+
+If we anyway using the `controller_manager` package now, we can also start using its `joint_state_broadcaster` functionality, we can add it to our launch file:
+
+```python
+    joint_state_broadcaster_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['joint_state_broadcaster'],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
+    )
+```
+
+And we can remove forwarding `joint_states` using the `gz_bridge`, let's delete it from the `gz_bridge.yaml` file:
+```yaml
 - ros_topic_name: "joint_states"
   gz_topic_name: "joint_states"
   ros_type_name: "sensor_msgs/msg/JointState"
   gz_type_name: "gz.msgs.Model"
   direction: "GZ_TO_ROS"
+```
 
+After rebuilding the workspace we can take a look on `rqt_graph`:
 
+![alt text][image11]
+
+And we can see that `joint_states` are now published by `joint_state_broadcaster`.
+
+# 3D model
+
+The package already includes the 3D models of the robotic arm, let's visually upgrade the arm before we move forward!
+
+Let's change the `geometry` tag within the `visual` tags:
+
+```xml
+      <geometry>
+        <!-- <cylinder radius="0.1" length="0.05"/> -->
+        <mesh filename = "package://bme_ros2_simple_arm/meshes/shoulder.dae"/>
+      </geometry>
+```
+
+The available mesh files are the following:
+```xml
+<mesh filename = "package://bme_ros2_simple_arm/meshes/shoulder.dae"/>
+<mesh filename = "package://bme_ros2_simple_arm/meshes/upper_arm.dae"/>
+<mesh filename = "package://bme_ros2_simple_arm/meshes/forearm.dae"/>
+<mesh filename = "package://bme_ros2_simple_arm/meshes/wrist.dae"/>
+```
 
   ros2 param set /move_group use_sim_time true
+
+
+
+
+
+  ```python
+      joint_trajectory_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=[
+            'arm_controller',
+            'gripper_controller',
+            '--param-file',
+            robot_controllers,
+            ],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
+    )
+```
