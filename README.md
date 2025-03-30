@@ -113,60 +113,61 @@ Let's take a look what's inside the `bme_ros2_simple_arm` package with the `tree
 ├── CMakeLists.txt
 ├── package.xml
 ├── config
-│   ├── amcl_localization.yaml
-│   ├── ekf.yaml
-│   ├── gz_bridge.yaml
-│   ├── navigation.yaml
-│   ├── slam_toolbox_localization.yaml
-│   ├── slam_toolbox_mapping.yaml
-│   └── waypoints.yaml
+│   ├── controller_position.yaml
+│   └── gz_bridge.yaml
 ├── launch
 │   ├── check_urdf.launch.py
 │   ├── spawn_robot.launch.py
 │   └── world.launch.py
-├── maps
-│   ├── my_map.pgm
-│   ├── my_map.yaml
-│   ├── serialized.data
-│   └── serialized.posegraph
 ├── meshes
-│   ├── lidar.dae
-│   ├── mogi_bot.dae
-│   └── wheel.dae
+│   ├── forearm.blend
+│   ├── forearm.dae
+│   ├── forearm.SLDPRT
+│   ├── forearm.STEP
+│   ├── forearm.STL
+│   ├── shoulder.blend
+│   ├── shoulder.dae
+│   ├── shoulder.SLDPRT
+│   ├── shoulder.STEP
+│   ├── shoulder.STL
+│   ├── upper_arm.blend
+│   ├── upper_arm.dae
+│   ├── upper_arm.SLDPRT
+│   ├── upper_arm.STEP
+│   ├── upper_arm.STL
+│   ├── wrist.blend
+│   ├── wrist.dae
+│   ├── wrist.SLDPRT
+│   ├── wrist.STEP
+│   └── wrist.STL
 ├── rviz
-│   ├── localization.rviz
-│   ├── mapping.rviz
-│   ├── navigation.rviz
 │   ├── rviz.rviz
 │   └── urdf.rviz
 ├── urdf
 │   ├── materials.xacro
-│   ├── mogi_bot.gazebo
-│   └── mogi_bot.urdf
+│   └── mogi_arm.xacro
 └── worlds
     ├── empty.sdf
-    └── home.sdf
+    └── world.sdf
 ```
 
 Let's see what will we do with the existing files and folders:
-- `config`: As we saw previously, we usually store parameters and large configuration files for ROS packages which aren't comfortable to handle from the launchfiles directly. In this lesson we will use more configuration files from this folder.
+- `config`: As we saw previously, we usually store parameters and large configuration files for ROS packages which aren't comfortable to handle from the launchfiles directly. In this lesson we will use configuration files for the `gz_bridge` and the position controller of the robotic arm.
 - `launch`: Default launch files are already part of the starting package, we can test the package with `spawn_robot.launch.py`.
-- `maps`: Offline map files for the Gazebo world
-- `meshes`: this folder contains the 3D models in `dae` format (collada mesh) that we use for our robot's body, wheels and lidar sensor.
+- `meshes`: this folder contains the 3D models in SolidWorks, Blender and exported `dae` format (collada mesh) that we use for our robot's links.
 - `rviz`: Pre-configured RViz2 layouts
-- `urdf`: The URDF models of our robot, we'll extend the `mogi_bot.urdf` and `gazebo` files through this lesson
+- `urdf`: The URDF models of our robot, we'll extend the `mogi_arm.xacro` during this lesson
 - `worlds`: default Gazebo worlds that we'll use in the simulations.
 
-We have another package `bme_ros2_navigation_py` for our python scripts:
+We have another package `bme_ros2_simple_arm_py` for our python scripts:
 ```bash
 .
-├── bme_ros2_navigation_py
+├── bme_ros2_simple_arm_py
 │   ├── __init__.py
-│   ├── send_initialpose.py
-│   └── slam_toolbox_load_map.py
+│   └── test_inverse_kinematics.py
 ├── package.xml
 ├── resource
-│   └── bme_ros2_navigation_py
+│   └── bme_ros2_simple_arm_py
 ├── setup.cfg
 └── setup.py
 ```
