@@ -21,6 +21,8 @@ arm_controller:
       - shoulder_lift_joint
       - elbow_joint
       - wrist_joint
+      - virtual_roll_joint
+      - virtual_yaw_joint
     command_interfaces:
       - position
     state_interfaces:

@@ -6,4 +6,6 @@ initial_positions:
   right_finger_joint: 0
   shoulder_lift_joint: 0
   shoulder_pan_joint: 0
+  virtual_roll_joint: 0
+  virtual_yaw_joint: 0
   wrist_joint: 0

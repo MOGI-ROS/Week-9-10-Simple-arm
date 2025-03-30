@@ -7,7 +7,7 @@ moveit_setup_assistant_config:
   package_settings:
     author_name: David Dudas
     author_email: david.dudas@outlook.com
-    generated_timestamp: 1743350373
+    generated_timestamp: 1743356085
   control_xacro:
     command:
       - position

@@ -27,6 +27,8 @@
         <joint name="elbow_joint" value="1.0805"/>
         <joint name="shoulder_lift_joint" value="-0.5988"/>
         <joint name="shoulder_pan_joint" value="0"/>
+        <joint name="virtual_roll_joint" value="0"/>
+        <joint name="virtual_yaw_joint" value="0"/>
         <joint name="wrist_joint" value="1.0284"/>
     </group_state>
     <group_state name="closed" group="gripper">
