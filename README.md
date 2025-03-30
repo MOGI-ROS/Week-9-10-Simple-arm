@@ -19,6 +19,9 @@
 [image17]: ./assets/gripper-camera.png "Gripper camera"
 [image18]: ./assets/table-camera.png "Table camera"
 [image19]: ./assets/rgbd-camera.png "Table RGBD camera"
+[image20]: ./assets/rqt-arm-controller.png "arm_controller"
+[image21]: ./assets/joint-angles.png "Joint angles"
+[image22]: ./assets/joint-angles-1.png "Joint angles"
 
 # Week-9-10-Simple-arm
 
@@ -48,8 +51,7 @@
 8.2. [Table camera](#table-camera)  
 8.3. [RGBD camera](#rgbd-camera)  
 9. [Moving the robot with a ROS node](#moving-the-robot-with-a-ros-node)  
-9.1. [Forward kinematics](#forward-kinematics)  
-9.2. [Inverse kinematics](#inverse-kinematics)  
+9.1. [Inverse kinematics](#inverse-kinematics)  
 10. [MoveIt 2](#moveit-2)  
 10.1. [Changing the controller](#changing-the-controller)  
 10.2. [Setup assistant](#setup-assistant)  
@@ -140,7 +142,7 @@ After we downloaded the `starter-branch` from GitHub, let's rebuild the workspac
 
 Let's test the package with the usual launch file:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 ![alt text][image1]
@@ -237,7 +239,7 @@ The shoulder of our robot is actually not 1 but 2 links, one for the pan and the
 
 Rebuild the workspace and try it:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 ![alt text][image4]
@@ -289,7 +291,7 @@ Let's add the elbow that is the connecting joint between upper arm and forearm.
 
 Rebuild the workspace and try it:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 ![alt text][image6]
@@ -337,7 +339,7 @@ Now add the wrist of the robotic arm:
 
 Rebuild the workspace and try it:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 ![alt text][image7]
@@ -471,7 +473,7 @@ And finally add a gripper. The gripper conists of a base and two fingers. The fi
 
 Rebuild the workspace and try it:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 ![alt text][image8]
@@ -520,7 +522,7 @@ And of course, include it in the beginning of our URDF file:
 
 Rebuild the workspace and try it together with `rqt_graph`:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 ![alt text][image9]
@@ -722,7 +724,7 @@ The available mesh files are the following:
 
 Rebuild the workspace and try it:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 ![alt text][image12]
@@ -737,7 +739,7 @@ Let's try first grabbing with friction!
 
 Just start the simulation:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 In another treminal start a joint trajectory controller:
@@ -790,7 +792,7 @@ We need to forward the attach and detach topics between ROS and Gazebo, so let's
 
 Rebuild the workspace and start the simulation:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 In another treminal start a joint trajectory controller:
@@ -834,7 +836,7 @@ And we have to forward its topic from Gazebo to ROS, add it to the `gz_bridge.ya
 
 Rebuild the workspace and start the simulation:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
 In another treminal start a joint trajectory controller and touch an object with the left gripper finger:
@@ -879,7 +881,7 @@ It's useful to have a link that helps better visulaizing the gripper position in
 
 Rebuild the workspace and start the simulation:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 ![alt text][image16]
 
@@ -1003,7 +1005,7 @@ And finally add two nodes to the launch file, these are also familiar from the p
 
 Rebuild the workspace and start the simulation, add the camera to RViz:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 ![alt text][image17]
 
@@ -1140,7 +1142,7 @@ And update `image_bridge` and add another relay node:
 
 Rebuild the workspace and start the simulation, add both cameras to RViz:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 ![alt text][image18]
 
@@ -1191,13 +1193,92 @@ And we also have to forward two more messages `gz_bridge`:
 
 Rebuild the workspace and start the simulation, add the depth cloud visualizer to RViz:
 ```bash
-ros2 launch bme_ros2_navigation spawn_robot.launch.py
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 ![alt text][image19]
 
 > I'll switch back to the normal camera from here.
 
+# Moving the robot with a ROS node
 
+In the previous chapters we moved the robotic arm with the `rqt_joint_trajectory_controller`, let's take a look on its topic in `rqt`:
+
+![alt text][image20]
+
+The node is sending the joint trajectory commands on the `/arm_controller/joint_trajectory` topic. Let's write our own node to send joint angles. Create a new `send_joint_angles.py` node in the `bme_ros2_simple_arm_py` package:
+
+```python
+import rclpy
+from rclpy.node import Node
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+
+class JointAnglePublisher(Node):
+    def __init__(self):
+        super().__init__('initial_pose_publisher')
+
+        # Create a publisher for the '/arm_controller/joint_trajectory' topic
+        self.publisher = self.create_publisher(JointTrajectory, '/arm_controller/joint_trajectory', 10)
+
+        # Create the JointTrajectory message
+        self.trajectory_command = JointTrajectory()
+        joint_names = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
+        self.trajectory_command.joint_names = joint_names
+
+        point = JointTrajectoryPoint()
+        #['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
+        point.positions = [0.0, 0.91, 1.37, -0.63, 0.3, 0.3]
+        point.velocities = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        point.time_from_start.sec = 2
+
+        self.trajectory_command.points = [point]
+
+        # Publish the message
+        self.get_logger().info('Publishing joint angles...')
+
+    def send_joint_angles(self):
+
+        while rclpy.ok():
+            self.publisher.publish(self.trajectory_command)
+            rclpy.spin_once(self, timeout_sec=0.1)
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = JointAnglePublisher()
+
+    try:
+        node.send_joint_angles()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+
+```
+
+Rebuild the workspace, start the simulation:
+```bash
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
+```
+
+And in another terminal start the new node:
+```bash
+ros2 run bme_ros2_simple_arm_py send_joint_angles
+```
+
+![alt text][image21]
+
+Try it with another joint angles:
+```python
+point.positions = [-0.45, 0.72, 1.84, -1.0, 0.3, 0.3]
+```
+
+![alt text][image22]
+
+## Inverse kinematics 
 
 
 
