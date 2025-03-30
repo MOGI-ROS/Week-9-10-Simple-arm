@@ -51,6 +51,9 @@
 [image49]: ./assets/moveit-21.png "MoveIt"
 [image50]: ./assets/moveit-22.png "MoveIt"
 [image51]: ./assets/moveit-23.png "MoveIt"
+[image52]: ./assets/moveit-24.png "MoveIt"
+[image53]: ./assets/moveit-25.png "MoveIt"
+[image54]: ./assets/moveit-26.png "MoveIt"
 
 # Week-9-10-Simple-arm
 
@@ -1676,7 +1679,7 @@ As soon as I set the joints to certain angles I'm not able to rotate the robotic
 
 # Fake 6 axis robotic arm
 
-To overcome the limitations of a less than 6 DoF robotic arm we can add fake roll and yaw joints. Let's add the following 
+To overcome the limitations of a less than 6 DoF robotic arm we can add fake roll and yaw joints. Let's add the following 2 links and joints to the URDF:
 
 ```xml
   <!-- STEP 13 - Virtual roll joint -->
@@ -1738,8 +1741,7 @@ To overcome the limitations of a less than 6 DoF robotic arm we can add fake rol
   </link>
 ```
 
-modify ee
-
+Change the parent of the end effector:
 ```xml
   <!-- End effector joint -->
   <joint name="end_effector_joint" type="fixed">
@@ -1749,8 +1751,7 @@ modify ee
   </joint>
 ```
 
-Add the new joints to the ROS control
-
+Add the new joints to the ROS control:
 ```xml
     <joint name="virtual_roll_joint">
       <command_interface name="position">
@@ -1776,7 +1777,7 @@ Add the new joints to the ROS control
     </joint>
 ```
 
-Add them to the joint state publisher plugin:
+Add them also to the joint state publisher plugin in `mogi_arm.gazebo`:
 ```xml
   <gazebo>
     <plugin
@@ -1795,7 +1796,7 @@ Add them to the joint state publisher plugin:
   </gazebo>
 ```
 
-Add to the controller parameters:
+And finally add them to the controller parameters:
 ```yaml
 arm_controller:
   ros__parameters:
@@ -1807,8 +1808,6 @@ arm_controller:
       - wrist_joint
       - virtual_roll_joint
       - virtual_yaw_joint
-#      - left_finger_joint
-#      - right_finger_joint
     command_interfaces:
       - position
     state_interfaces:
@@ -1816,16 +1815,44 @@ arm_controller:
       - velocity
 ```
 
-rebuild the workspace
+Rebuild the workspace, and we can update the MoveIt configuration package!
 
 ## Setting up moveit
 
+A MoveIt package can be modified and re-generated with the same setup assistant, we can run it with the following launch file:
+```bash
 ros2 launch bme_ros2_simple_arm_moveit_config setup_assistant.launch.py
+```
 
-make sure from src and not share!
+Be careful if it wants to load and modify the package from a generated folder, make sure the right package is selected from `src`folder and not from any generated location!
 
-regenerate collision matrix
-we don' thave to change the kinematic chain, but we can take a look in it
-Delete and re-add controllers for ROS and MoveIt
+After the package is loaded, re-generate the collision matrix first. We don' thave to change anything on the kinematic chain, but we can take a look on it:
+![alt text][image52]
 
-We have to fix again the joint_limits.yaml and moveit_controller.yaml
+Delete and re-add controllers for ROS and MoveIt so it will include the new joints:
+![alt text][image53]
+
+We have to fix again the `joint_limits.yaml` and `moveit_controller.yaml` files as before. And then we can try our changes!
+
+#### 1. In the first terminal start the simulation and close RViz after it opened:
+```bash
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
+```
+
+#### 2. In another terminal start the MoveIt `move_group` backend:
+```bash
+ros2 launch bme_ros2_simple_arm_moveit_config move_group.launch.py
+```
+
+#### 3. In a third terminal start RViz from the generated MoveIt package:
+```bash
+ros2 launch bme_ros2_simple_arm_moveit_config moveit_rviz.launch.py
+```
+
+#### 4. And finally, set the parameter of MoveIt to use the simulation time:
+```bash
+ros2 param set /move_group use_sim_time true
+```
+
+After these changes we can freely move the interactive marker in the RViz, it's not perfect, because it's still a 4 DoF robotic arm, but it works very well.
+![alt text][image54]
