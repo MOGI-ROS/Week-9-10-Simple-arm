@@ -39,16 +39,16 @@
         <scale>1 1 1</scale>
         <link name='link'>
           <velocity>0 0 0 0 0 0</velocity>
-          <acceleration>2.7802600000000002 -0.46688400000000002 -3.1216499999999998 2.7531099999999999 -0.81890100000000055 -2.6769799999999999</acceleration>
-          <wrench>1.0843 -0.182085 -1.2174499999999999 0 0 0</wrench>
+          <acceleration>0 0 0 0 0 0</acceleration>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
       </model>
       <model name='coke_can'>
         <scale>1 1 1</scale>
         <link name='link'>
           <velocity>0 0 0 0 0 0</velocity>
-          <acceleration>-0.051323000000000001 0.129216 0.026956000000000001 -2.25793 -0.89923500000000056 -0.48265999999999998</acceleration>
-          <wrench>-0.020015999999999999 0.050394000000000001 0.010513 0 0 0</wrench>
+          <acceleration>0 0 0 0 0 0</acceleration>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
       </model>
       <model name='green_cylinder'>
@@ -101,7 +101,7 @@
     </state>
     <gui fullscreen='false'>
       <camera name='user_camera'>
-        <pose>1.2588900000000001 -0.16742099999999999 3.74796 -6.0674396585551716e-17 1.3809500000000006 -2.9807199999999998</pose>
+        <pose>1.2588900000000001 -0.16742099999999999 3.74796 -1.0015873337857317e-16 1.3809500000000006 -2.9807199999999998</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -257,7 +257,7 @@
       </link>
       <static>false</static>
       <allow_auto_disable>true</allow_auto_disable>
-      <pose>0.50000000000368494 4.2159513716924206e-12 1.0649991508963497 4.2251901668379401e-12 -1.9907850585355978e-12 1.0000099863630997e-05</pose>
+      <pose>0.50000000000368494 4.2159513716924206e-12 1.0649991508963497 4.2251901669083611e-12 -1.9907850585687783e-12 1.0000099863797667e-05</pose>
       <self_collide>false</self_collide>
     </model>
     <model name='green_cylinder'>
@@ -362,29 +362,483 @@
       </link>
       <static>false</static>
       <allow_auto_disable>true</allow_auto_disable>
-      <pose>0.40000000636616451 -0.20000000234418991 1.0649991543952275 -1.266548263088291e-08 -7.6318825381684266e-08 0.00018305429596043686</pose>
+      <pose>0.40000000636616451 -0.20000000234418991 1.0649991543952275 -1.266548270165628e-08 -7.6318825807904231e-08 0.00018305429698276093</pose>
       <self_collide>false</self_collide>
     </model>
-    <include>
-      <uri>file:///home/david/gazebo_models/Table</uri>
-      <name>Table</name>
+    <model name='Table'>
+      <static>true</static>
+      <link name='link'>
+        <collision name='surface'>
+          <pose>0 0 1 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.5 0.80000000000000004 0.029999999999999999</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.59999999999999998</mu>
+                <mu2>0.59999999999999998</mu2>
+              </ode>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='visual1'>
+          <pose>0 0 1 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.5 0.80000000000000004 0.029999999999999999</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>1 1 1 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Wood</name>
+            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://Table/Table_Diffuse.jpg</albedo_map>
+              </metal>
+            </pbr>
+          </material>
+        </visual>
+        <collision name='front_left_leg'>
+          <pose>0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='front_left_leg'>
+          <pose>0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='front_right_leg'>
+          <pose>0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='front_right_leg'>
+          <pose>0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='back_right_leg'>
+          <pose>-0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='back_right_leg'>
+          <pose>-0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='back_left_leg'>
+          <pose>-0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='back_left_leg'>
+          <pose>-0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
       <pose>0.40000000000000002 0.40000000000000002 0 0 0 0</pose>
-    </include>
-    <include>
-      <uri>file:///home/david/gazebo_models/Table</uri>
-      <name>Table_0</name>
+      <self_collide>false</self_collide>
+    </model>
+    <model name='Table_0'>
+      <static>true</static>
+      <link name='link'>
+        <collision name='surface'>
+          <pose>0 0 1 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.5 0.80000000000000004 0.029999999999999999</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.59999999999999998</mu>
+                <mu2>0.59999999999999998</mu2>
+              </ode>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='visual1'>
+          <pose>0 0 1 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.5 0.80000000000000004 0.029999999999999999</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>1 1 1 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Wood</name>
+            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://Table/Table_Diffuse.jpg</albedo_map>
+              </metal>
+            </pbr>
+          </material>
+        </visual>
+        <collision name='front_left_leg'>
+          <pose>0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='front_left_leg'>
+          <pose>0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='front_right_leg'>
+          <pose>0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='front_right_leg'>
+          <pose>0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='back_right_leg'>
+          <pose>-0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='back_right_leg'>
+          <pose>-0.68000000000000005 -0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='back_left_leg'>
+          <pose>-0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='back_left_leg'>
+          <pose>-0.68000000000000005 0.38 0.5 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.02</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
       <pose>0.40000000000000002 -0.40000000000000002 0 0 0 0</pose>
-    </include>
-    <include>
-      <uri>file:///home/david/gazebo_models/coke_can_steel</uri>
-      <name>coke_can_steel</name>
-      <pose>0.40041676163451634 0.20117957889639371 1.0147965879579008 -0.011212021183530272 0.0040288618334589554 0.00023562997656949853</pose>
-    </include>
-    <include>
-      <uri>file:///home/david/gazebo_models/beer</uri>
-      <name>beer_0</name>
+      <self_collide>false</self_collide>
+    </model>
+    <model name='coke_can_steel'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>0.2</mass>
+          <inertia>
+            <ixx>0.083000000000000004</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.083000000000000004</iyy>
+            <iyz>0</iyz>
+            <izz>0.083000000000000004</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://coke_can_steel/meshes/coke_can.obj</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://coke_can_steel/meshes/coke_can.obj</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <pose>0 0 0 0 0 0</pose>
+        <gravity>true</gravity>
+      </link>
+      <surface_props:material>metal</surface_props:material>
+      <surface_props:biofouling_rating>0</surface_props:biofouling_rating>
+      <surface_props:roughness>0.0</surface_props:roughness>
+      <pose>0.40041676163451634 0.20117957889639371 1.0147965879579008 -0.011212021183530268 0.0040288618334589528 0.00023562997656949864</pose>
+      <static>false</static>
+      <self_collide>false</self_collide>
+    </model>
+    <model name='beer_0'>
+      <link name='link'>
+        <pose>0 0 0.115 0 0 0</pose>
+        <inertial>
+          <mass>0.39000000000000001</mass>
+          <inertia>
+            <ixx>0.00058</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00058</iyy>
+            <iyz>0</iyz>
+            <izz>0.00019000000000000001</izz>
+          </inertia>
+          <pose>0 0 0 0 0 0</pose>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <cylinder>
+              <radius>0.055</radius>
+              <length>0.23000000000000001</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>0.055</radius>
+              <length>0.23000000000000001</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <diffuse>1 1 1 1</diffuse>
+            <script>
+              <uri>model://beer/materials/scripts</uri>
+              <uri>model://beer/materials/textures</uri>
+              <name>Beer/Diffuse</name>
+            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://beer/materials/textures/beer.png</albedo_map>
+              </metal>
+            </pbr>
+          </material>
+        </visual>
+        <enable_wind>false</enable_wind>
+      </link>
       <pose>0.20000000298023224 0.40000000596046448 1.0149998857843019 -1.1688722425658999e-18 -6.9461382799104335e-19 8.2526562057093746e-18</pose>
-    </include>
+      <static>false</static>
+      <self_collide>false</self_collide>
+    </model>
     <light name='sun' type='directional'>
       <pose>0 0 10 0 0 0</pose>
       <cast_shadows>true</cast_shadows>
