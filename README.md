@@ -18,6 +18,7 @@
 [image16]: ./assets/end-effector.png "End effector"
 [image17]: ./assets/gripper-camera.png "Gripper camera"
 [image18]: ./assets/table-camera.png "Table camera"
+[image19]: ./assets/rgbd-camera.png "Table RGBD camera"
 
 # Week-9-10-Simple-arm
 
@@ -1146,11 +1147,64 @@ ros2 launch bme_ros2_navigation spawn_robot.launch.py
 ## RGBD camera
 
 Let's replace the table camera with an RGBD camera as we tried in the `Gazebo-sensors` lessons!
-We have to modify the Gazebo plugin:
+We have to replace the Gazebo camera plugin with an RGBD plugin:
 
 ```xml
-
+  <gazebo reference="table_camera_link">
+    <sensor name="rgbd_camera" type="rgbd_camera">
+      <camera>
+        <horizontal_fov>1.25</horizontal_fov>
+        <image>
+          <width>320</width>
+          <height>240</height>
+        </image>
+        <clip>
+          <near>0.3</near>
+          <far>15</far>
+        </clip>
+        <optical_frame_id>table_camera_link_optical</optical_frame_id>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>20</update_rate>
+      <visualize>true</visualize>
+      <topic>table_camera</topic>
+      <gz_frame_id>table_camera_link</gz_frame_id>
+    </sensor>
+  </gazebo>
 ```
+
+And we also have to forward two more messages `gz_bridge`:
+
+```yaml
+- ros_topic_name: "table_camera/depth_image"
+  gz_topic_name: "table_camera/depth_image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: "GZ_TO_ROS"
+
+- ros_topic_name: "table_camera/points"
+  gz_topic_name: "table_camera/points"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
+  direction: "GZ_TO_ROS"
+```
+
+Rebuild the workspace and start the simulation, add the depth cloud visualizer to RViz:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+![alt text][image19]
+
+> I'll switch back to the normal camera from here.
+
+
+
+
+
+
+
+
+
 
 
   ros2 param set /move_group use_sim_time true
