@@ -13,20 +13,6 @@ arm_controller:
       - shoulder_lift_joint
       - elbow_joint
       - wrist_joint
-      - virtual_roll_joint
-      - virtual_yaw_joint
-#      - left_finger_joint
-#      - right_finger_joint
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
-
-gripper_controller:
-  ros__parameters:
-    type: joint_trajectory_controller/JointTrajectoryController
-    joints:
       - left_finger_joint
       - right_finger_joint
     command_interfaces:
@@ -34,3 +20,4 @@ gripper_controller:
     state_interfaces:
       - position
       - velocity
+

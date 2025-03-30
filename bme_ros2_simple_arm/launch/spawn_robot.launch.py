@@ -115,7 +115,7 @@ def generate_launch_description():
         ]
     )
 
-    # Node to bridge /cmd_vel and /odom
+    # Node to bridge topics between ROS and Gazebo
     gz_bridge_node = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
@@ -124,46 +124,6 @@ def generate_launch_description():
             f'config_file:={gz_bridge_params_path}'
         ],
         output="screen",
-        parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-        ]
-    )
-
-    # Node to bridge camera topics
-    gz_image_bridge_node = Node(
-        package="ros_gz_image",
-        executable="image_bridge",
-        arguments=[
-            "/gripper_camera/image",
-            "/table_camera/image",
-        ],
-        output="screen",
-        parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time'),
-             'gripper_camera.image.compressed.jpeg_quality': 75,
-             'table_camera.image.compressed.jpeg_quality': 75,},
-        ],
-    )
-
-    # Relay node to republish camera_info to image/camera_info
-    relay_gripper_camera_info_node = Node(
-        package='topic_tools',
-        executable='relay',
-        name='relay_camera_info',
-        output='screen',
-        arguments=['gripper_camera/camera_info', 'gripper_camera/image/camera_info'],
-        parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-        ]
-    )
-
-    # Relay node to republish camera_info to image/camera_info
-    relay_table_camera_info_node = Node(
-        package='topic_tools',
-        executable='relay',
-        name='relay_camera_info',
-        output='screen',
-        arguments=['table_camera/camera_info', 'table_camera/image/camera_info'],
         parameters=[
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
         ]
@@ -188,29 +148,6 @@ def generate_launch_description():
         executable='joint_state_publisher_gui',
     )
 
-    joint_state_broadcaster_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['joint_state_broadcaster'],
-        parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-        ]
-    )
-
-    joint_trajectory_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=[
-            'arm_controller',
-            'gripper_controller',
-            '--param-file',
-            robot_controllers,
-            ],
-        parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-        ]
-    )
-
     launchDescriptionObject = LaunchDescription()
 
     launchDescriptionObject.add_action(rviz_launch_arg)
@@ -226,12 +163,7 @@ def generate_launch_description():
     launchDescriptionObject.add_action(rviz_node)
     launchDescriptionObject.add_action(spawn_urdf_node)
     launchDescriptionObject.add_action(gz_bridge_node)
-    launchDescriptionObject.add_action(gz_image_bridge_node)
-    launchDescriptionObject.add_action(relay_gripper_camera_info_node)
-    launchDescriptionObject.add_action(relay_table_camera_info_node)
     launchDescriptionObject.add_action(robot_state_publisher_node)
-    #launchDescriptionObject.add_action(joint_state_publisher_gui_node)
-    launchDescriptionObject.add_action(joint_state_broadcaster_spawner)
-    launchDescriptionObject.add_action(joint_trajectory_controller_spawner)
+    launchDescriptionObject.add_action(joint_state_publisher_gui_node)
 
     return launchDescriptionObject

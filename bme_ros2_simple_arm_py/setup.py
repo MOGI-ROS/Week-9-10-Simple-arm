@@ -20,8 +20,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'send_joint_angles = bme_ros2_simple_arm_py.send_joint_angles:main',
-            'inverse_kinematics = bme_ros2_simple_arm_py.inverse_kinematics:main',
         ],
     },
 )
