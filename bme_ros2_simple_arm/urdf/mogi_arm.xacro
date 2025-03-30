@@ -404,4 +404,78 @@
     </inertial>
   </link>
 
+  <!-- STEP 11 - Gripper camera -->
+  <joint type="fixed" name="gripper_camera_joint">
+    <origin xyz="0.0 0.0 0.0" rpy="0 -1.5707 0"/>
+    <child link="gripper_camera_link"/>
+    <parent link="gripper_base"/>
+  </joint>
+
+  <link name='gripper_camera_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="1.0e-03"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".01 .01 .01"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+  </link>
+
+  <joint type="fixed" name="gripper_camera_optical_joint">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <child link="gripper_camera_link_optical"/>
+    <parent link="gripper_camera_link"/>
+  </joint>
+
+  <link name="gripper_camera_link_optical">
+  </link>
+
+  <!-- STEP 12 - Table camera -->
+  <joint type="fixed" name="table_camera_joint">
+    <origin xyz="1.0 0.4 0.2" rpy="0 0 3.6652"/>
+    <child link="table_camera_link"/>
+    <parent link="world"/>
+  </joint>
+
+  <link name='table_camera_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="1.0e-03"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+  </link>
+
+  <joint type="fixed" name="table_camera_optical_joint">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <child link="table_camera_link_optical"/>
+    <parent link="table_camera_link"/>
+  </joint>
+
+  <link name="table_camera_link_optical">
+  </link>
+
 </robot>

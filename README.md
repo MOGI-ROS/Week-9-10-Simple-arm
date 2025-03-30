@@ -15,7 +15,9 @@
 [image13]: ./assets/grabbing.png "Grabbing with friction"
 [image14]: ./assets/grabbing-1.png "Grabbing with fix joint"
 [image15]: ./assets/contact-sensor.png "Contact sensor"
-[image16]: ./assets/end-effector.png "EE"
+[image16]: ./assets/end-effector.png "End effector"
+[image17]: ./assets/gripper-camera.png "Gripper camera"
+[image18]: ./assets/table-camera.png "Table camera"
 
 # Week-9-10-Simple-arm
 
@@ -883,12 +885,272 @@ ros2 launch bme_ros2_navigation spawn_robot.launch.py
 # Simulating cameras  
 Let's add a few cameras into the simulation.
 ## Gripper camera 
-First add a camera to the gripper!
+First add a camera to the gripper! Let's start with the URDF file:
 
+```xml
+  <!-- STEP 11 - Gripper camera -->
+  <joint type="fixed" name="gripper_camera_joint">
+    <origin xyz="0.0 0.0 0.0" rpy="0 -1.5707 0"/>
+    <child link="gripper_camera_link"/>
+    <parent link="gripper_base"/>
+  </joint>
+
+  <link name='gripper_camera_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="1.0e-03"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".01 .01 .01"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+  </link>
+
+  <joint type="fixed" name="gripper_camera_optical_joint">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <child link="gripper_camera_link_optical"/>
+    <parent link="gripper_camera_link"/>
+  </joint>
+
+  <link name="gripper_camera_link_optical">
+  </link>
+```
+
+Then add the Gazebo plugin to the `mogi_arm.gazebo` file:
+
+```xml
+  <gazebo reference="gripper_camera_link">
+    <sensor name="camera" type="camera">
+      <camera>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>15</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+        <optical_frame_id>gripper_camera_link_optical</optical_frame_id>
+        <camera_info_topic>gripper_camera/camera_info</camera_info_topic>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>20</update_rate>
+      <visualize>true</visualize>
+      <topic>gripper_camera/image</topic>
+    </sensor>
+  </gazebo>
+```
+
+We have to forward the `camera_info` topic from Gazebo to ROS, so add it to the `gz_bridge.yaml`:
+```yaml
+- ros_topic_name: "gripper_camera/camera_info"
+  gz_topic_name: "gripper_camera/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: "GZ_TO_ROS"
+```
+
+And finally add two nodes to the launch file, these are also familiar from the previous lessons:
+
+```python
+    # Node to bridge camera topics
+    gz_image_bridge_node = Node(
+        package="ros_gz_image",
+        executable="image_bridge",
+        arguments=[
+            "/gripper_camera/image",
+        ],
+        output="screen",
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time'),
+             'gripper_camera.image.compressed.jpeg_quality': 75},
+        ],
+    )
+
+    # Relay node to republish camera_info to image/camera_info
+    relay_gripper_camera_info_node = Node(
+        package='topic_tools',
+        executable='relay',
+        name='relay_camera_info',
+        output='screen',
+        arguments=['gripper_camera/camera_info', 'gripper_camera/image/camera_info'],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
+    )
+```
+
+Rebuild the workspace and start the simulation, add the camera to RViz:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+![alt text][image17]
 
 ## Table camera 
+
+Now add a fix camera to the environment, start again with the URDF file:
+
+```xml
+  <!-- STEP 12 - Table camera -->
+  <joint type="fixed" name="table_camera_joint">
+    <origin xyz="1.0 0.4 0.2" rpy="0 0 3.6652"/>
+    <child link="table_camera_link"/>
+    <parent link="world"/>
+  </joint>
+
+  <link name='table_camera_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="1.0e-03"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+  </link>
+
+  <joint type="fixed" name="table_camera_optical_joint">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <child link="table_camera_link_optical"/>
+    <parent link="table_camera_link"/>
+  </joint>
+
+  <link name="table_camera_link_optical">
+  </link>
+```
+
+Now add the Gazebo plugin:
+
+```xml
+  <gazebo reference="table_camera_link">
+    <sensor name="camera" type="camera">
+      <camera>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>15</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+        <optical_frame_id>table_camera_link_optical</optical_frame_id>
+        <camera_info_topic>table_camera/camera_info</camera_info_topic>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>20</update_rate>
+      <visualize>true</visualize>
+      <topic>table_camera/image</topic>
+    </sensor>
+  </gazebo>
+```
+
+Add it to the `gz_bridge`:
+```yaml
+- ros_topic_name: "table_camera/camera_info"
+  gz_topic_name: "table_camera/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: "GZ_TO_ROS"
+```
+
+And update `image_bridge` and add another relay node:
+
+```python
+    # Node to bridge camera topics
+    gz_image_bridge_node = Node(
+        package="ros_gz_image",
+        executable="image_bridge",
+        arguments=[
+            "/gripper_camera/image",
+            "/table_camera/image",
+        ],
+        output="screen",
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time'),
+             'gripper_camera.image.compressed.jpeg_quality': 75,
+             'table_camera.image.compressed.jpeg_quality': 75,},
+        ],
+    )
+
+    # Relay node to republish camera_info to image/camera_info
+    relay_gripper_camera_info_node = Node(
+        package='topic_tools',
+        executable='relay',
+        name='relay_camera_info',
+        output='screen',
+        arguments=['gripper_camera/camera_info', 'gripper_camera/image/camera_info'],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
+    )
+
+    # Relay node to republish camera_info to image/camera_info
+    relay_table_camera_info_node = Node(
+        package='topic_tools',
+        executable='relay',
+        name='relay_camera_info',
+        output='screen',
+        arguments=['table_camera/camera_info', 'table_camera/image/camera_info'],
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ]
+    )
+```
+
+Rebuild the workspace and start the simulation, add both cameras to RViz:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+![alt text][image18]
+
 ## RGBD camera
 
+Let's replace the table camera with an RGBD camera as we tried in the `Gazebo-sensors` lessons!
+We have to modify the Gazebo plugin:
+
+```xml
+
+```
 
 
   ros2 param set /move_group use_sim_time true
