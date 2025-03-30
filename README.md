@@ -27,6 +27,30 @@
 [image25]: ./assets/ik_1.png "Inverse kinematics"
 [image26]: ./assets/inverse-kinematics.png "Inverse kinematics"
 [image27]: ./assets/separate-controller.png "Separate controllers"
+[image28]: ./assets/moveit.png "MoveIt"
+[image29]: ./assets/moveit-1.png "MoveIt"
+[image30]: ./assets/moveit-2.png "MoveIt"
+[image31]: ./assets/moveit-3.png "MoveIt"
+[image32]: ./assets/moveit-4.png "MoveIt"
+[image33]: ./assets/moveit-5.png "MoveIt"
+[image34]: ./assets/moveit-6.png "MoveIt"
+[image35]: ./assets/moveit-7.png "MoveIt"
+[image36]: ./assets/moveit-8.png "MoveIt"
+[image37]: ./assets/moveit-9.png "MoveIt"
+[image38]: ./assets/moveit-10.png "MoveIt"
+[image39]: ./assets/moveit-11.png "MoveIt"
+[image40]: ./assets/moveit-12.png "MoveIt"
+[image41]: ./assets/moveit-13.png "MoveIt"
+[image42]: ./assets/moveit-14.png "MoveIt"
+[image43]: ./assets/moveit-15.png "MoveIt"
+[image44]: ./assets/moveit-16.png "MoveIt"
+[image45]: ./assets/moveit-17.png "MoveIt"
+[image46]: ./assets/moveit-18.png "MoveIt"
+[image47]: ./assets/moveit-19.png "MoveIt"
+[image48]: ./assets/moveit-20.png "MoveIt"
+[image49]: ./assets/moveit-21.png "MoveIt"
+[image50]: ./assets/moveit-22.png "MoveIt"
+[image51]: ./assets/moveit-23.png "MoveIt"
 
 # Week-9-10-Simple-arm
 
@@ -62,7 +86,9 @@
 10.1. [Changing the controller](#changing-the-controller)  
 10.2. [Setup assistant](#setup-assistant)  
 10.3. [Debugging](#debugging)  
-11. [Fake 6 axis](#fake-six-axis)  
+10.4. [Recap](#recap)  
+10.5. [Limitations](#limitations)  
+11. [Fake 6 axis robotic arm](#fake-six-axis-robotic-arm)  
 11.1. [Setting up moveit](#setting-up-moveit)  
 
 # Introduction
@@ -1423,27 +1449,227 @@ ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
 ```
 
 We have to see 2 separated controllers now for the arm and for the gripper.
-
 ![alt text][image27]
 
 ## Setup assistant 
 
+To use MoveIt we have to generate a special package that sets up MoveIt, luckily this can be done through MoveIt's graphical interface using the setup assistant:
+```bash
+ros2 run moveit_setup_assistant moveit_setup_assistant
+```
 
+After setup assistant started we see the following window, press `Create New MoveIt Configuration Package`:
+![alt text][image28]
+
+Then browse the URDF file (`mogi_arm.xacro–) and load the file. If it successfully loaded the robot, it's visualized on the right side of the window:
+![alt text][image29]
+
+Go to the next `Self-Collision` menu and press the `Generate Collision Matrix` button:
+![alt text][image30]
+
+After the generation the default collision matrix is loaded:
+![alt text][image31]
+
+
+Then head to the `Planning Groups`:
+![alt text][image32]
+
+Add a group for the arm, set the `Kinematic Solver` and add a kinematic chain:
+![alt text][image33]
+
+In the kinematic chain we define the start of the chain which is the `base_link` and the end which is the `end_effector_link`:
+![alt text][image34]
+
+Then we create a new group for the gripper, we don't need any kinematic solver here, and we press the `Add Joints`:
+![alt text][image35]
+
+We only have to add the two finger joints:
+![alt text][image36]
+
+Finally the `Planning Groups` look like this:
+![alt text][image37]
+
+We can move on to add some default poses, like a home position for the arm or an open/closed gripper state:
+![alt text][image38]
+
+Then go to the `End Effectors` and add our `end_effector link`:
+![alt text][image39]
+
+The next item we set is the `ROS 2 Controllers`:
+![alt text][image40]
+
+Where we just have to press the `Auto Add JointTrajectoryController`:
+![alt text][image41]
+
+Then go to the `MoveIt Controllers`:
+![alt text][image42]
+
+Where we have to press again the `Auto Add JointTrajectoryController`:
+![alt text][image43]
+
+Then we can fill out the author information that will be used during the package generation:
+![alt text][image44]
+
+And finally we have to browse where to save the new package. Let's browse the parent folder of our `bme_ros2_simple_arm` package and generate the new package next to it with `bme_ros2_simple_arm_moveit_config` name, then press `Generate Package`:
+![alt text][image45]
+
+We can ignore the warning about missing virtual joints:
+![alt text][image46]
+
+And finally our MoveIt configuration package is done! We can exit from the setup assistant.
+![alt text][image47]
+
+Let's rebuild the workspace, source the `install/setup.bash` file because we have a new package, and start the simulation:
+```bash
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
+```
+
+We can close RViz as soon as it opened, because we'll use MoveIt's RViz configuration. In another terminal start the following launch file:
+```bash
+ros2 launch bme_ros2_simple_arm_moveit_config move_group.launch.py 
+```
 
 ## Debugging 
 
+We might get various errors at this point, one is that our joint limits are integers instead of doubles, this is the error message:
+
+```bash
+[move_group-1] terminate called after throwing an instance of 'rclcpp::exceptions::InvalidParameterTypeException'
+[move_group-1]   what():  parameter 'robot_description_planning.joint_limits.left_finger_joint.max_velocity' has invalid type: expected [double] got [integer]
+```
+
+We can fix this in the `bme_ros2_simple_arm_moveit_config/config/joint_limits.yaml` file, let's change every `max_velocity` and `max_acceleration` limits to a double for every joints.
+
+```yaml
+  left_finger_joint:
+    has_velocity_limits: true
+    max_velocity: 4.0
+    has_acceleration_limits: false
+    max_acceleration: 0.0
+```
+
+---
+
+Rebuild the workspace and try it again! This time we get the green message that everything looks all right!
+
+```bash
+[move_group-1] You can start planning now!
+```
+
+So in another terminal start the RViz from the MoveIt package:
+```bash
+ros2 launch bme_ros2_simple_arm_moveit_config moveit_rviz.launch.py
+```
+
+![alt text][image48]
+
+Using the interactive marker set up a new pose and press `Plan & Execute` button:
+![alt text][image49]
 
 
+And we get a couple of other error messages from MoveIt:
+```bash
+[move_group-1] [ERROR] [1743351127.963572658] [move_group.moveit.moveit.core.time_optimal_trajectory_generation]: No acceleration limit was defined for joint shoulder_pan_joint! You have to define acceleration limits in the URDF or joint_limits.yaml
+[move_group-1] [ERROR] [1743351127.963626159] [move_group.moveit.moveit.ros.add_time_optimal_parameterization]: Response adapter 'AddTimeOptimalParameterization' failed to generate a trajectory.
+[move_group-1] [ERROR] [1743351127.963715870] [move_group]: PlanningResponseAdapter 'AddTimeOptimalParameterization' failed with error code FAILURE
+[move_group-1] [INFO] [1743351127.963757038] [move_group.moveit.moveit.ros.move_group.move_action]: FAILURE
+```
 
+Acceleration limits are missing, we have to add acceleration limits manually for every joints in the same `bme_ros2_simple_arm_moveit_config/config/joint_limits.yaml` file:
 
+```yaml
+    has_acceleration_limits: true
+    max_acceleration: 3.14
+```
 
+---
 
+Rebuild the workspace and try it again! Start RViz and try to execute a path planning. We get another error message this time:
 
+```bash
+[move_group-1] [ERROR] [1743351310.642949195] [move_group.moveit.moveit.ros.trajectory_execution_manager]: Unable to identify any set of controllers that can actuate the specified joints: [ elbow_joint shoulder_lift_joint shoulder_pan_joint wrist_joint ]
+[move_group-1] [ERROR] [1743351310.642992280] [move_group.moveit.moveit.ros.trajectory_execution_manager]: Known controllers and their joints:
+[move_group-1] 
+[move_group-1] [ERROR] [1743351310.643005071] [move_group.moveit.moveit.ros.plan_execution]: Apparently trajectory initialization failed
+[move_group-1] [INFO] [1743351310.643058114] [move_group.moveit.moveit.ros.move_group.move_action]: CONTROL_FAILED
+```
 
+Let's fix the `bme_ros2_simple_arm_moveit_config/config/moveit_controllers.yaml` file that seems is generated without some important rows. Action namespace (`action_ns`) and the `default: true` tag is missing, let's add them:
 
-  ros2 param set /move_group use_sim_time true
+```yaml
+# MoveIt uses this configuration for controller management
 
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 
+moveit_simple_controller_manager:
+  controller_names:
+    - arm_controller
+    - gripper_controller
 
+  arm_controller:
+    type: FollowJointTrajectory
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_joint
+    action_ns: follow_joint_trajectory
+    default: true
+  gripper_controller:
+    type: FollowJointTrajectory
+    joints:
+      - left_finger_joint
+      - right_finger_joint
+    action_ns: follow_joint_trajectory
+    default: true
+```
 
+---
 
+Rebuild the workspace and try it again! Start RViz and try to execute a path planning as before. And it still doesn't work. We don't get any errors though, but there is the following warning:
+
+```bash
+[move_group-1] [INFO] [1743351527.289935887] [move_group.moveit.moveit.ros.current_state_monitor]: Didn't receive robot state (joint angles) with recent timestamp within 1.000000 seconds. Requested time 1743351526.289861, but latest received state has time 974.746000.
+[move_group-1] Check clock synchronization if your are running ROS across multiple machines!
+[move_group-1] [WARN] [1743351527.290011639] [move_group.moveit.moveit.ros.trajectory_execution_manager]: Failed to validate trajectory: couldn't receive full current joint state within 1s
+[move_group-1] [INFO] [1743351527.290386230] [move_group.moveit.moveit.ros.move_group.move_action]: CONTROL_FAILED
+```
+
+This is a clear sign that MoveIt is not using the simulation time. We can fix it by setting it's parameter in another terminal (while MoveIt is still running!):
+
+```bash
+ros2 param set /move_group use_sim_time true
+```
+
+And if we press the `Plan & Execute` button again, finally it's working in both RViz and in the Gazebo simulation!
+![alt text][image50]
+
+## Recap
+
+Let's collect the commands here that is needed to properly start MoveIt!
+
+### 1. In the first terminal start the simulation and close RViz after it opened:
+```bash
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
+```
+
+### 2. In another terminal start the MoveIt `move_group` backend:
+```bash
+ros2 launch bme_ros2_simple_arm_moveit_config move_group.launch.py
+```
+
+### 3. In a third terminal start RViz from the generated MoveIt package:
+```bash
+ros2 launch bme_ros2_simple_arm_moveit_config moveit_rviz.launch.py
+```
+
+### 4. And finally, set the parameter of MoveIt to use the simulation time:
+```bash
+ros2 param set /move_group use_sim_time true
+```
+
+## Limitations
+
+As soon as I set the joints to certain angles I'm not able to rotate the robotic arm anymore around the vertical axis because it's a 4 DoF robot and there aren't joints that could provide the right roll and yaw angles of the TCP. MoveIt works the best with at least 6 DoF robotic arms.
+
+![alt text][image51]

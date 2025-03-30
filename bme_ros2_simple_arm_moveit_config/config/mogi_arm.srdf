@@ -24,10 +24,10 @@
         <joint name="wrist_joint" value="0"/>
     </group_state>
     <group_state name="home" group="arm">
-        <joint name="elbow_joint" value="0.4035"/>
-        <joint name="shoulder_lift_joint" value="0.1649"/>
+        <joint name="elbow_joint" value="1.0805"/>
+        <joint name="shoulder_lift_joint" value="-0.5988"/>
         <joint name="shoulder_pan_joint" value="0"/>
-        <joint name="wrist_joint" value="0.5858"/>
+        <joint name="wrist_joint" value="1.0284"/>
     </group_state>
     <group_state name="closed" group="gripper">
         <joint name="left_finger_joint" value="0"/>
