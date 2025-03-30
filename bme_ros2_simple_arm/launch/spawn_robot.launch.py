@@ -202,6 +202,7 @@ def generate_launch_description():
         executable='spawner',
         arguments=[
             'arm_controller',
+            'gripper_controller',
             '--param-file',
             robot_controllers,
             ],

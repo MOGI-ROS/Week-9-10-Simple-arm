@@ -25,6 +25,8 @@
 [image23]: ./assets/ik_3.png "Inverse kinematics"
 [image24]: ./assets/ik_2.png "Inverse kinematics"
 [image25]: ./assets/ik_1.png "Inverse kinematics"
+[image26]: ./assets/inverse-kinematics.png "Inverse kinematics"
+[image27]: ./assets/separate-controller.png "Separate controllers"
 
 # Week-9-10-Simple-arm
 
@@ -1308,20 +1310,93 @@ The inverse kinematics and forward kinematics calculation can be found in the `t
 
 ## Inverse kinematics ROS node
 
+Let's create a new ROS node for moving the robot using inverse kinematics, create a new file `inverse_kinematics.py`. Start from the existing code of `send_joint_angles.py` add the `inverse_kinematics()` function and calculate the `point.positions` with this function from a TCP coordinate.
 
+```python
+point = JointTrajectoryPoint()
+#['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_joint', 'left_finger_joint', 'right_finger_joint']
+joint_angles = self.inverse_kinematics([0.4, 0.2, 0.15], "open", 0)
+point.positions = joint_angles
+...
+```
 
+Rebuild the workspace, start the simulation:
+```bash
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
+```
 
+And in another terminal start the new node:
+```bash
+ros2 run bme_ros2_simple_arm_py inverse_kinematics
+```
 
+![alt text][image26]
 
+Let's try a few another TCP coordinates:
 
+```python
+joint_angles = inverse_kinematics([0.35, 0, 0.05], "open", math.pi/2)
+joint_angles = inverse_kinematics([0.5, 0, 0.05], "open", 0)
+joint_angles = inverse_kinematics([0.4, 0, 0.15], "open", 0)
+```
 
-  ros2 param set /move_group use_sim_time true
+# MoveIt 2
 
+Writing our own inverse kinematics might work for simple robots, but it gets really complex with more joints, weird link shapes, or motion constraints.
 
+MoveIt 2 is a powerful ROS 2-based framework for robot motion planning. It helps you with things like:
+- Inverse kinematics
+- Path planning
+- Collision checking
+- Trajectory execution
+- Grasp planning
 
+Instead of writing all that from scratch, MoveIt 2 gives you ready-to-use tools that work with many robots.
 
+## Changing the controller 
 
-  ```python
+First we have to change our controllers a little bit, we have to separate the gripper fingers into a gripper controller. Change the `controller_position.yaml`:
+
+```yaml
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+arm_controller:
+  ros__parameters:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_joint
+#      - left_finger_joint
+#      - right_finger_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+gripper_controller:
+  ros__parameters:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints:
+      - left_finger_joint
+      - right_finger_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+```
+
+And because we have 2 controllers now change the `controller_spawner` in our launch file to load both controllers:
+
+```python
       joint_trajectory_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
@@ -1336,3 +1411,39 @@ The inverse kinematics and forward kinematics calculation can be found in the `t
         ]
     )
 ```
+
+Rebuild the workspace, start the simulation:
+```bash
+ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
+```
+
+And open the joint trajectory controller:
+```bash
+ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
+```
+
+We have to see 2 separated controllers now for the arm and for the gripper.
+
+![alt text][image27]
+
+## Setup assistant 
+
+
+
+## Debugging 
+
+
+
+
+
+
+
+
+
+
+  ros2 param set /move_group use_sim_time true
+
+
+
+
+
