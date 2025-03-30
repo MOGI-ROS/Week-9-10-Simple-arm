@@ -305,6 +305,64 @@
     <minDepth>0.002</minDepth>
   </gazebo>
 
+  <!-- STEP 13 - Virtual roll joint -->
+  <joint name="virtual_roll_joint" type="revolute">
+    <limit lower="-3.1415" upper="3.1415" effort="54.0" velocity="3.14"/>
+    <parent link="wrist_link"/>
+    <child link="virtual_roll_link"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Virtual roll link -->
+  <link name="virtual_roll_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+      </geometry>
+      <material name="red"/>
+     </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0e-03" />
+      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
+               iyy="1.0e-03" iyz="0.0"
+               izz="1.0e-03" />
+    </inertial>
+  </link>
+
+  <!-- Virtual yaw joint -->
+  <joint name="virtual_yaw_joint" type="revolute">
+    <limit lower="-3.1415" upper="3.1415" effort="54.0" velocity="3.14"/>
+    <parent link="virtual_roll_link"/>
+    <child link="virtual_yaw_link"/>
+    <axis xyz="1 0 0"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Virtual yaw link -->
+  <link name="virtual_yaw_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+      </geometry>
+      <material name="red"/>
+     </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0e-03" />
+      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
+               iyy="1.0e-03" iyz="0.0"
+               izz="1.0e-03" />
+    </inertial>
+  </link>
+
   <!-- STEP 9 - ROS2 control -->
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
@@ -354,6 +412,28 @@
       <state_interface name="velocity"/>
       <state_interface name="effort"/>
     </joint>
+    <joint name="virtual_roll_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="virtual_yaw_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
     <joint name="left_finger_joint">
       <command_interface name="position">
         <param name="min">-2</param>
@@ -381,7 +461,7 @@
   <!-- STEP 10 - End effector -->
   <joint name="end_effector_joint" type="fixed">
     <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
-    <parent link="wrist_link"/>
+    <parent link="virtual_yaw_link"/>
     <child link="end_effector_link"/>
   </joint>
 

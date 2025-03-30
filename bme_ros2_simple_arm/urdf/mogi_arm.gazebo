@@ -8,6 +8,8 @@
         <joint_name>shoulder_lift_joint</joint_name>
         <joint_name>elbow_joint</joint_name>
         <joint_name>wrist_joint</joint_name>
+        <joint_name>virtual_roll_joint</joint_name>
+        <joint_name>virtual_yaw_joint</joint_name>
         <joint_name>left_finger_joint</joint_name>
         <joint_name>right_finger_joint</joint_name>
     </plugin>

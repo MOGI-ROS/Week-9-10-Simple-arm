@@ -1673,3 +1673,159 @@ ros2 param set /move_group use_sim_time true
 As soon as I set the joints to certain angles I'm not able to rotate the robotic arm anymore around the vertical axis because it's a 4 DoF robot and there aren't joints that could provide the right roll and yaw angles of the TCP. MoveIt works the best with at least 6 DoF robotic arms.
 
 ![alt text][image51]
+
+# Fake 6 axis robotic arm
+
+To overcome the limitations of a less than 6 DoF robotic arm we can add fake roll and yaw joints. Let's add the following 
+
+```xml
+  <!-- STEP 13 - Virtual roll joint -->
+  <joint name="virtual_roll_joint" type="revolute">
+    <limit lower="-3.1415" upper="3.1415" effort="54.0" velocity="3.14"/>
+    <parent link="wrist_link"/>
+    <child link="virtual_roll_link"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Virtual roll link -->
+  <link name="virtual_roll_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+      </geometry>
+      <material name="red"/>
+     </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0e-03" />
+      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
+               iyy="1.0e-03" iyz="0.0"
+               izz="1.0e-03" />
+    </inertial>
+  </link>
+
+  <!-- Virtual yaw joint -->
+  <joint name="virtual_yaw_joint" type="revolute">
+    <limit lower="-3.1415" upper="3.1415" effort="54.0" velocity="3.14"/>
+    <parent link="virtual_roll_link"/>
+    <child link="virtual_yaw_link"/>
+    <axis xyz="1 0 0"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- Virtual yaw link -->
+  <link name="virtual_yaw_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+      </geometry>
+      <material name="red"/>
+     </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0e-03" />
+      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
+               iyy="1.0e-03" iyz="0.0"
+               izz="1.0e-03" />
+    </inertial>
+  </link>
+```
+
+modify ee
+
+```xml
+  <!-- End effector joint -->
+  <joint name="end_effector_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <parent link="virtual_yaw_link"/>
+    <child link="end_effector_link"/>
+  </joint>
+```
+
+Add the new joints to the ROS control
+
+```xml
+    <joint name="virtual_roll_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="virtual_yaw_joint">
+      <command_interface name="position">
+        <param name="min">-2</param>
+        <param name="max">2</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+```
+
+Add them to the joint state publisher plugin:
+```xml
+  <gazebo>
+    <plugin
+        filename="gz-sim-joint-state-publisher-system"
+        name="gz::sim::systems::JointStatePublisher">
+        <topic>joint_states</topic>
+        <joint_name>shoulder_pan_joint</joint_name>
+        <joint_name>shoulder_lift_joint</joint_name>
+        <joint_name>elbow_joint</joint_name>
+        <joint_name>wrist_joint</joint_name>
+        <joint_name>virtual_roll_joint</joint_name>
+        <joint_name>virtual_yaw_joint</joint_name>
+        <joint_name>left_finger_joint</joint_name>
+        <joint_name>right_finger_joint</joint_name>
+    </plugin>
+  </gazebo>
+```
+
+Add to the controller parameters:
+```yaml
+arm_controller:
+  ros__parameters:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_joint
+      - virtual_roll_joint
+      - virtual_yaw_joint
+#      - left_finger_joint
+#      - right_finger_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+```
+
+rebuild the workspace
+
+## Setting up moveit
+
+ros2 launch bme_ros2_simple_arm_moveit_config setup_assistant.launch.py
+
+make sure from src and not share!
+
+regenerate collision matrix
+we don' thave to change the kinematic chain, but we can take a look in it
+Delete and re-add controllers for ROS and MoveIt
+
+We have to fix again the joint_limits.yaml and moveit_controller.yaml
