@@ -58,7 +58,7 @@
 # Week-9-10-Simple-arm
 
 ## This is how far we will get by the end of this lesson: 
-  <a href="https://youtu.be/NkOX4zX9XbQ"><img width="600" src="./assets/youtube-navigation.png"></a>  
+  <a href="https://youtu.be/VNM-FqoVrW8"><img width="600" src="./assets/youtube.png"></a>  
 
 # Table of Contents
 1. [Introduction](#introduction)  
