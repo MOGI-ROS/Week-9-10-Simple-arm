@@ -11,6 +11,11 @@
 [image9]: ./assets/joint-states-1.png "Joint states"
 [image10]: ./assets/joint-trajectory-controller.png "Joint trajectory"
 [image11]: ./assets/joint-states-2.png "Joint states"
+[image12]: ./assets/3d-models.png "3D models"
+[image13]: ./assets/grabbing.png "Grabbing with friction"
+[image14]: ./assets/grabbing-1.png "Grabbing with fix joint"
+[image15]: ./assets/contact-sensor.png "Contact sensor"
+[image16]: ./assets/end-effector.png "EE"
 
 # Week-9-10-Simple-arm
 
@@ -711,6 +716,180 @@ The available mesh files are the following:
 <mesh filename = "package://bme_ros2_simple_arm/meshes/forearm.dae"/>
 <mesh filename = "package://bme_ros2_simple_arm/meshes/wrist.dae"/>
 ```
+
+Rebuild the workspace and try it:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+
+![alt text][image12]
+
+# Grabbing objects  
+
+In this chapter we'll grab and lift objects around the robots. There are 2 ways to interact objects in the simulation, one is using friction and the physics engine and the other one is attaching and detaching objects to the arm using fake fixed joints on demand.
+
+## Using friction 
+
+Let's try first grabbing with friction!
+
+Just start the simulation:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+
+In another treminal start a joint trajectory controller:
+```bash
+ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
+```
+
+And adjust the angles of the robotic arm to grab any of the objects:
+![alt text][image13]
+
+Grabbing using friction works very well, but it means Gazebo has to simulate physics on all objects. This isn't a problem in a simple simulation but it can start consuming very high resources in a more complicated simulation environment. Also I have to be careful to properly set up the inetrtia matrix of all simulated objects. A wrong inertia matrix can lead to dancing objects that eat up all of our CPU time.
+
+## Using detachable joints
+
+Another was is creating fixed joints between the object and the robotic arm, then we can attach and detach such objects with simple commands. To use it we have to add the `gazebo-detachable-joint-system` plugin to our `mogi_arm.gazebo` file, here we have to define parent and child models and link, and the topics that will be used to control the attach and detach.
+
+```xml
+  <gazebo>
+    <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+      <parent_link>left_finger</parent_link>
+      <child_model>green_cylinder</child_model>
+      <child_link>link</child_link>
+      <detach_topic>/green/detach</detach_topic>
+      <attach_topic>/green/attach</attach_topic>
+      <output_topic>/green/state</output_topic>
+    </plugin>
+  </gazebo>
+```
+
+We need to forward the attach and detach topics between ROS and Gazebo, so let's add them to the `gz_bridge.yaml` file:
+```yaml
+- ros_topic_name: "/green/detach"
+  gz_topic_name: "/green/detach"
+  ros_type_name: "std_msgs/msg/Empty"
+  gz_type_name: "gz.msgs.Empty"
+  direction: "ROS_TO_GZ"
+
+- ros_topic_name: "/green/attach"
+  gz_topic_name: "/green/attach"
+  ros_type_name: "std_msgs/msg/Empty"
+  gz_type_name: "gz.msgs.Empty"
+  direction: "ROS_TO_GZ"
+
+- ros_topic_name: "/green/state"
+  gz_topic_name: "/green/state"
+  ros_type_name: "std_msgs/msg/String"
+  gz_type_name: "gz.msgs.StringMsg"
+  direction: "GZ_TO_ROS"
+```
+
+Rebuild the workspace and start the simulation:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+
+In another treminal start a joint trajectory controller:
+```bash
+ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
+```
+
+And in a 3rd terminal let's start an `rqt`. By default, the detachable joint system start with attached child objects! To detcah them first we have to publish an empty message to the `/green/detach` topic. To attach it again we have to publish an empty message to the `/green/attach` topic.
+
+![alt text][image14]
+
+> I'll turn off this plugin from now, so I don't have to detach the objects at the start of the simulation. It could be also a solution to start a custom node that ensures that all objects are detached at startup.
+
+# Detecting collision
+
+In our simulation we might need to dynamically attach and detach objects, but if there are multiple detachable objects, how to determine which one to attach? A good solution is to add a collision detection into the fingers of the gripper, from that we can read out the child object's name that we can use in our own node to dinamically attach the right object.
+
+We only need to add a contact sensor plugin to our robotic arm, let's add it to the left finger:
+
+```xml
+  <gazebo reference="left_finger">
+    <sensor name='sensor_contact' type='contact'>
+      <contact>
+        <collision>left_finger_collision</collision>
+        <topic>/contact_left_finger</topic>
+      </contact>
+      <always_on>1</always_on>
+      <update_rate>100</update_rate>
+    </sensor>
+  </gazebo>
+```
+
+And we have to forward its topic from Gazebo to ROS, add it to the `gz_bridge.yaml`:
+```yaml
+- ros_topic_name: "/contact_left_finger"
+  gz_topic_name: "/contact_left_finger"
+  ros_type_name: "ros_gz_interfaces/msg/Contacts"
+  gz_type_name: "gz.msgs.Contacts"
+  direction: "GZ_TO_ROS"
+```
+
+Rebuild the workspace and start the simulation:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+
+In another treminal start a joint trajectory controller and touch an object with the left gripper finger:
+```bash
+ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
+```
+
+And in a 3rd terminal let's start an `rqt` to monitor the `/contact_left_finger` topic:
+![alt text][image15]
+
+# Adding an end effector
+
+It's useful to have a link that helps better visulaizing the gripper position in the 3D space. Let's add a little red cube to the `mogi_arm.xacro` that has no collision only a visual tag:
+
+```xml
+  <!-- STEP 10 - End effector -->
+  <joint name="end_effector_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
+    <parent link="wrist_link"/>
+    <child link="end_effector_link"/>
+  </joint>
+
+  <!-- End effector link -->
+  <link name="end_effector_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+      </geometry>
+      <material name="red"/>
+     </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0e-03" />
+      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
+               iyy="1.0e-03" iyz="0.0"
+               izz="1.0e-03" />
+    </inertial>
+  </link>
+```
+
+Rebuild the workspace and start the simulation:
+```bash
+ros2 launch bme_ros2_navigation spawn_robot.launch.py
+```
+![alt text][image16]
+
+# Simulating cameras  
+Let's add a few cameras into the simulation.
+## Gripper camera 
+First add a camera to the gripper!
+
+
+## Table camera 
+## RGBD camera
+
+
 
   ros2 param set /move_group use_sim_time true
 

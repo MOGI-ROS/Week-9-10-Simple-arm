@@ -18,4 +18,27 @@
       <parameters>$(find bme_ros2_simple_arm)/config/controller_position.yaml</parameters>
     </plugin>
   </gazebo>
+
+  <!-- <gazebo>
+    <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+      <parent_link>left_finger</parent_link>
+      <child_model>green_cylinder</child_model>
+      <child_link>link</child_link>
+      <detach_topic>/green/detach</detach_topic>
+      <attach_topic>/green/attach</attach_topic>
+      <output_topic>/green/state</output_topic>
+    </plugin>
+  </gazebo> -->
+
+  <gazebo reference="left_finger">
+    <sensor name='sensor_contact' type='contact'>
+      <contact>
+        <collision>left_finger_collision</collision>
+        <topic>/contact_left_finger</topic>
+      </contact>
+      <always_on>1</always_on>
+      <update_rate>100</update_rate>
+    </sensor>
+  </gazebo>
+
 </robot>
