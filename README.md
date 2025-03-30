@@ -22,6 +22,9 @@
 [image20]: ./assets/rqt-arm-controller.png "arm_controller"
 [image21]: ./assets/joint-angles.png "Joint angles"
 [image22]: ./assets/joint-angles-1.png "Joint angles"
+[image23]: ./assets/ik_3.png "Inverse kinematics"
+[image24]: ./assets/ik_2.png "Inverse kinematics"
+[image25]: ./assets/ik_1.png "Inverse kinematics"
 
 # Week-9-10-Simple-arm
 
@@ -52,6 +55,7 @@
 8.3. [RGBD camera](#rgbd-camera)  
 9. [Moving the robot with a ROS node](#moving-the-robot-with-a-ros-node)  
 9.1. [Inverse kinematics](#inverse-kinematics)  
+9.2. [Inverse kinematics ROS node](#inverse-kinematics-ros-node) 
 10. [MoveIt 2](#moveit-2)  
 10.1. [Changing the controller](#changing-the-controller)  
 10.2. [Setup assistant](#setup-assistant)  
@@ -849,7 +853,7 @@ And in a 3rd terminal let's start an `rqt` to monitor the `/contact_left_finger`
 
 # Adding an end effector
 
-It's useful to have a link that helps better visulaizing the gripper position in the 3D space. Let's add a little red cube to the `mogi_arm.xacro` that has no collision only a visual tag:
+It's useful to have a link that helps better visulaizing the tool center point (TCP) pose in the 3D space. Let's add a little red cube to the `mogi_arm.xacro` that has no collision only a visual tag:
 
 ```xml
   <!-- STEP 10 - End effector -->
@@ -1280,6 +1284,29 @@ point.positions = [-0.45, 0.72, 1.84, -1.0, 0.3, 0.3]
 
 ## Inverse kinematics 
 
+In robotics, we often want the robot’s tool (TCP) to reach a specific position or follow a path in space. Instead of manually setting each joint angle — which can be complicated and unintuitive — we use inverse kinematics (IK) to automatically calculate the joint angles needed to reach that position. This makes it easier to plan precise movements, especially for tasks like picking, placing, or welding, where the tool’s position matters more than individual joint values.
+
+![alt text][image23]
+
+The first joint of our 4 DoF robotic arm is rotating the whole robot around the vertical (`z`) axis, so we can easily calculate this first joint angle (`j0`) from the `x` and `y` TCP coordinates:
+
+```python
+j0 = math.atan(coords[1]/coords[0])
+```
+
+Where `coords` is the desired [`x`, `y`, `z`] coordinates of the TCP.
+
+![alt text][image24]
+
+For our inverse kinematics solver the gripper angle (`j3`) is an input parameter and it's always interpreted to the robot's base fixed coordinate system, and not to the last moving link! It means `0 rad` gripper angle is always horizontal, `pi / 2 rad` is always a vertically pointing down angle.
+
+Since we already know `j0` and `j3` we only have to calculate `j1` and `j2` like this:
+
+![alt text][image25]
+
+The inverse kinematics and forward kinematics calculation can be found in the `test_inverse_kinematics.py` file in the `bme_ros2_simple_arm_py` package. This is not a ROS node, just a simple python script to verify the correct calculation of the algorithm. 
+
+## Inverse kinematics ROS node
 
 
 
