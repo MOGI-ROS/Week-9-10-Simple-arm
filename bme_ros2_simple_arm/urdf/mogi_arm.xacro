@@ -5,7 +5,7 @@
   <!-- STEP 3 - RViz colors -->
   <xacro:include filename="$(find bme_ros2_simple_arm)/urdf/materials.xacro" />
 
-  <!-- STEP 5 - Gazebo plugin -->
+  <!-- STEP 8 - Gazebo plugin -->
   <xacro:include filename="$(find bme_ros2_simple_arm)/urdf/mogi_arm.gazebo" />
 
   <!-- STEP 1 - Global reference link -->
@@ -69,8 +69,7 @@
     </collision>
     <visual>
       <geometry>
-        <!-- <cylinder radius="0.1" length="0.05"/> -->
-        <mesh filename = "package://bme_ros2_simple_arm/meshes/shoulder.dae"/>
+        <cylinder radius="0.1" length="0.05"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
@@ -105,15 +104,14 @@
     </collision>
     <visual>
       <geometry>
-        <!-- <cylinder radius="0.05" length="0.2"/> -->
-        <mesh filename = "package://bme_ros2_simple_arm/meshes/upper_arm.dae"/>
+        <cylinder radius="0.05" length="0.2"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
     </visual>
   </link>
 
-  <!-- STEP 6 - Elbow -->
+  <!-- STEP 5 - Elbow -->
   <joint name="elbow_joint" type="revolute">
     <limit lower="-2.3562" upper="2.3562" effort="150.0" velocity="3.14"/>
     <parent link="upper_arm_link"/>
@@ -141,15 +139,14 @@
     </collision>
     <visual>
       <geometry>
-        <!-- <cylinder radius="0.025" length="0.25"/> -->
-        <mesh filename = "package://bme_ros2_simple_arm/meshes/forearm.dae"/>
+        <cylinder radius="0.025" length="0.25"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.125" rpy="0.0 0.0 0.0"/>
     </visual>
   </link>
 
-  <!-- STEP 7 - Wrist -->
+  <!-- STEP 6 - Wrist -->
   <joint name="wrist_joint" type="revolute">
     <limit lower="-2.3562" upper="2.3562" effort="54.0" velocity="3.14"/>
     <parent link="forearm_link"/>
@@ -177,15 +174,14 @@
     </collision>
     <visual>
       <geometry>
-        <!-- <cylinder radius="0.02" length="0.1"/> -->
-        <mesh filename = "package://bme_ros2_simple_arm/meshes/wrist.dae"/>
+        <cylinder radius="0.02" length="0.1"/>
       </geometry>
       <material name="orange"/>
       <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0"/>
     </visual>
   </link>
 
-  <!-- STEP 8 - Gripper -->
+  <!-- STEP 7 - Gripper -->
   <joint name="gripper_base_joint" type="fixed">
     <parent link="wrist_link"/>
     <child link="gripper_base"/>
@@ -304,104 +300,5 @@
     <maxVel>1.0</maxVel>
     <minDepth>0.002</minDepth>
   </gazebo>
-
-  <!-- STEP 9 - ROS2 control -->
-  <ros2_control name="GazeboSystem" type="system">
-    <hardware>
-      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-    </hardware>
-    <joint name="shoulder_pan_joint">
-      <command_interface name="position">
-        <param name="min">-2</param>
-        <param name="max">2</param>
-      </command_interface>
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="shoulder_lift_joint">
-      <command_interface name="position">
-        <param name="min">-2</param>
-        <param name="max">2</param>
-      </command_interface>
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="elbow_joint">
-      <command_interface name="position">
-        <param name="min">-2</param>
-        <param name="max">2</param>
-      </command_interface>
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="wrist_joint">
-      <command_interface name="position">
-        <param name="min">-2</param>
-        <param name="max">2</param>
-      </command_interface>
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="left_finger_joint">
-      <command_interface name="position">
-        <param name="min">-2</param>
-        <param name="max">2</param>
-      </command_interface>
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="right_finger_joint">
-      <command_interface name="position">
-        <param name="min">-2</param>
-        <param name="max">2</param>
-      </command_interface>
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-  </ros2_control>
-
-  <!-- STEP 10 - End effector -->
-  <joint name="end_effector_joint" type="fixed">
-    <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
-    <parent link="wrist_link"/>
-    <child link="end_effector_link"/>
-  </joint>
-
-  <!-- End effector link -->
-  <link name="end_effector_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.01 0.01 0.01" />
-      </geometry>
-      <material name="red"/>
-     </visual>
-
-    <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="1.0e-03" />
-      <inertia ixx="1.0e-03" ixy="0.0" ixz="0.0"
-               iyy="1.0e-03" iyz="0.0"
-               izz="1.0e-03" />
-    </inertial>
-  </link>
 
 </robot>

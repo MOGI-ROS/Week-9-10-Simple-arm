@@ -169,6 +169,10 @@ def generate_launch_description():
             ('/tf_static', 'tf_static')
         ]
     )
+    joint_state_publisher_gui_node = Node(
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui',
+    )
 
     joint_state_broadcaster_spawner = Node(
         package='controller_manager',
@@ -211,7 +215,8 @@ def generate_launch_description():
     #launchDescriptionObject.add_action(gz_image_bridge_node)
     #launchDescriptionObject.add_action(relay_camera_info_node)
     launchDescriptionObject.add_action(robot_state_publisher_node)
-    launchDescriptionObject.add_action(joint_state_broadcaster_spawner)
-    launchDescriptionObject.add_action(joint_trajectory_controller_spawner)
+    #launchDescriptionObject.add_action(joint_state_publisher_gui_node)
+    #launchDescriptionObject.add_action(joint_state_broadcaster_spawner)
+    #launchDescriptionObject.add_action(joint_trajectory_controller_spawner)
 
     return launchDescriptionObject
