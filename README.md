@@ -565,6 +565,14 @@ ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 
 Now the `joint_states` are coming from the simulation but we stil ldon't have the tools to move the arm.
 
+Before we move to to next chapter, let's install the following packages:
+```yaml
+sudo apt install ros-jazzy-controller-manager
+sudo apt install ros-jazzy-gz-ros2-control
+sudo apt install ros-jazzy-joint-trajectory-controller
+sudo apt install ros-jazzy-rqt-joint-trajectory-controller
+```
+
 # ROS Controller
 
 Joint angles are important, but this still doesn't mean that we simulate any actuators in these joints with Gazebo. And here comes the `ROS2 control` and it's controllers for every joints. Let's add it to our URDF file:
@@ -1382,6 +1390,11 @@ MoveIt 2 is a powerful ROS 2-based framework for robot motion planning. It helps
 - Grasp planning
 
 Instead of writing all that from scratch, MoveIt 2 gives you ready-to-use tools that work with many robots.
+
+To use MoveIt 2 we have to install its package:
+```yaml
+sudo apt install ros-jazzy-moveit
+```
 
 ## Changing the controller 
 
