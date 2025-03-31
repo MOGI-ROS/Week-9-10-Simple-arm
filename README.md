@@ -1452,7 +1452,7 @@ And open the joint trajectory controller:
 ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
 ```
 
-We have to see 2 separated controllers now for the arm and for the gripper.
+We have to see 2 separated controllers now for the arm and for the gripper.  
 ![alt text][image27]
 
 ## Setup assistant 
@@ -1462,73 +1462,73 @@ To use MoveIt we have to generate a special package that sets up MoveIt, luckily
 ros2 run moveit_setup_assistant moveit_setup_assistant
 ```
 
-After setup assistant started we see the following window, press `Create New MoveIt Configuration Package`:
+After setup assistant started we see the following window, press `Create New MoveIt Configuration Package`:  
 ![alt text][image28]
 
-Then browse the URDF file (`mogi_arm.xacro–) and load the file. If it successfully loaded the robot, it's visualized on the right side of the window:
+Then browse the URDF file (`mogi_arm.xacro–) and load the file. If it successfully loaded the robot, it's visualized on the right side of the window:  
 ![alt text][image29]
 
-Go to the next `Self-Collision` menu and press the `Generate Collision Matrix` button:
+Go to the next `Self-Collision` menu and press the `Generate Collision Matrix` button:  
 ![alt text][image30]
 
-After the generation the default collision matrix is loaded:
+After the generation the default collision matrix is loaded:  
 ![alt text][image31]
 
 
-Then head to the `Planning Groups`:
+Then head to the `Planning Groups`:  
 ![alt text][image32]
 
-Add a group for the arm, set the `Kinematic Solver` and add a kinematic chain:
+Add a group for the arm, set the `Kinematic Solver` and add a kinematic chain:  
 ![alt text][image33]
 
-In the kinematic chain we define the start of the chain which is the `base_link` and the end which is the `end_effector_link`:
+In the kinematic chain we define the start of the chain which is the `base_link` and the end which is the `end_effector_link`:  
 ![alt text][image34]
 
-Then we create a new group for the gripper, we don't need any kinematic solver here, and we press the `Add Joints`:
+Then we create a new group for the gripper, we don't need any kinematic solver here, and we press the `Add Joints`:  
 ![alt text][image35]
 
-We only have to add the two finger joints:
+We only have to add the two finger joints:  
 ![alt text][image36]
 
-Finally the `Planning Groups` look like this:
+Finally the `Planning Groups` look like this:  
 ![alt text][image37]
 
-We can move on to add some default poses, like a home position for the arm or an open/closed gripper state:
+We can move on to add some default poses, like a home position for the arm or an open/closed gripper state:  
 ![alt text][image38]
 
-Then go to the `End Effectors` and add our `end_effector link`:
+Then go to the `End Effectors` and add our `end_effector link`:  
 ![alt text][image39]
 
-The next item we set is the `ROS 2 Controllers`:
+The next item we set is the `ROS 2 Controllers`:  
 ![alt text][image40]
 
-Where we just have to press the `Auto Add JointTrajectoryController`:
+Where we just have to press the `Auto Add JointTrajectoryController`:  
 ![alt text][image41]
 
-Then go to the `MoveIt Controllers`:
+Then go to the `MoveIt Controllers`:  
 ![alt text][image42]
 
-Where we have to press again the `Auto Add JointTrajectoryController`:
+Where we have to press again the `Auto Add JointTrajectoryController`:  
 ![alt text][image43]
 
-Then we can fill out the author information that will be used during the package generation:
+Then we can fill out the author information that will be used during the package generation:  
 ![alt text][image44]
 
-And finally we have to browse where to save the new package. Let's browse the parent folder of our `bme_ros2_simple_arm` package and generate the new package next to it with `bme_ros2_simple_arm_moveit_config` name, then press `Generate Package`:
+And finally we have to browse where to save the new package. Let's browse the parent folder of our `bme_ros2_simple_arm` package and generate the new package next to it with `bme_ros2_simple_arm_moveit_config` name, then press `Generate Package`:  
 ![alt text][image45]
 
-We can ignore the warning about missing virtual joints:
+We can ignore the warning about missing virtual joints:  
 ![alt text][image46]
 
-And finally our MoveIt configuration package is done! We can exit from the setup assistant.
+And finally our MoveIt configuration package is done! We can exit from the setup assistant.  
 ![alt text][image47]
 
-Let's rebuild the workspace, source the `install/setup.bash` file because we have a new package, and start the simulation:
+Let's rebuild the workspace, source the `install/setup.bash` file because we have a new package, and start the simulation:  
 ```bash
 ros2 launch bme_ros2_simple_arm spawn_robot.launch.py
 ```
 
-We can close RViz as soon as it opened, because we'll use MoveIt's RViz configuration. In another terminal start the following launch file:
+We can close RViz as soon as it opened, because we'll use MoveIt's RViz configuration. In another terminal start the following launch file:  
 ```bash
 ros2 launch bme_ros2_simple_arm_moveit_config move_group.launch.py 
 ```
@@ -1567,7 +1567,7 @@ ros2 launch bme_ros2_simple_arm_moveit_config moveit_rviz.launch.py
 
 ![alt text][image48]
 
-Using the interactive marker set up a new pose and press `Plan & Execute` button:
+Using the interactive marker set up a new pose and press `Plan & Execute` button:  
 ![alt text][image49]
 
 
@@ -1645,7 +1645,7 @@ This is a clear sign that MoveIt is not using the simulation time. We can fix it
 ros2 param set /move_group use_sim_time true
 ```
 
-And if we press the `Plan & Execute` button again, finally it's working in both RViz and in the Gazebo simulation!
+And if we press the `Plan & Execute` button again, finally it's working in both RViz and in the Gazebo simulation!  
 ![alt text][image50]
 
 ## Recap
@@ -1827,10 +1827,10 @@ ros2 launch bme_ros2_simple_arm_moveit_config setup_assistant.launch.py
 
 Be careful if it wants to load and modify the package from a generated folder, make sure the right package is selected from `src`folder and not from any generated location!
 
-After the package is loaded, re-generate the collision matrix first. We don' thave to change anything on the kinematic chain, but we can take a look on it:
+After the package is loaded, re-generate the collision matrix first. We don' thave to change anything on the kinematic chain, but we can take a look on it:  
 ![alt text][image52]
 
-Delete and re-add controllers for ROS and MoveIt so it will include the new joints:
+Delete and re-add controllers for ROS and MoveIt so it will include the new joints:  
 ![alt text][image53]
 
 We have to fix again the `joint_limits.yaml` and `moveit_controller.yaml` files as before. And then we can try our changes!
@@ -1855,5 +1855,5 @@ ros2 launch bme_ros2_simple_arm_moveit_config moveit_rviz.launch.py
 ros2 param set /move_group use_sim_time true
 ```
 
-After these changes we can freely move the interactive marker in the RViz, it's not perfect, because it's still a 4 DoF robotic arm, but it works very well.
+After these changes we can freely move the interactive marker in the RViz, it's not perfect, because it's still a 4 DoF robotic arm, but it works very well.  
 ![alt text][image54]
