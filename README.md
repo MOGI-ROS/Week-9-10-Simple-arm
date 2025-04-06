@@ -55,7 +55,7 @@
 [image53]: ./assets/moveit-25.png "MoveIt"
 [image54]: ./assets/moveit-26.png "MoveIt"
 
-# Week-9-10-Simple-arm
+# Week 9-10: Simple-arm
 
 ## This is how far we will get by the end of this lesson: 
   <a href="https://youtu.be/VNM-FqoVrW8"><img width="600" src="./assets/youtube.png"></a>  
