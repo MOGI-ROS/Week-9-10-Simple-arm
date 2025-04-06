@@ -460,7 +460,7 @@
 
   <!-- STEP 10 - End effector -->
   <joint name="end_effector_joint" type="fixed">
-    <origin xyz="0.0 0.0 0.175" rpy="0 0 0"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
     <parent link="virtual_yaw_link"/>
     <child link="end_effector_link"/>
   </joint>
